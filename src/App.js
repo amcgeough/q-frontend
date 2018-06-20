@@ -4,17 +4,10 @@ import Select from 'react-select';
 import MultiSelectField from './components/Multiselect.js'
 import Creatable from './components/Creatable.js'
 import CitiesField from './components/Virtualized.js'
-import Pagination from 'react-bootstrap/lib/Pagination';
+import Pagination_App from './components/Pagination.js'
 
 // import './example.less';
 
-let active = 7;
-let items = [];
-for (let number = 1; number <= 10; number++) {
-  items.push(
-    <Pagination.Item active={number === active}>{number}</Pagination.Item>
-  );
-}
 
 
 const Choice = [
@@ -26,6 +19,10 @@ const Choice = [
 	{ label: 'Peppermint', value: 'peppermint' },
 ];
 
+
+const SelectStyle = {width:'50%', padding:'30px'}
+
+
 class App extends Component {
   constructor() {
     super();
@@ -34,36 +31,33 @@ class App extends Component {
     }
   }
 
-  componentWillMount() {
-fetch('http://127.0.0.1:8000/api/').then(response => response.json())
-.then(data => this.setState({ questions: data }));
-  }
+
+//   componentWillMount() {
+// fetch('http://127.0.0.1:8000/api/').then(response => response.json())
+// .then(data => this.setState({ questions: data }));
+//   }
 
   render() {
-    const { questions } = this.state;
-    console.log(questions)
-    var text = questions.filter(text => text.id==3).map(text => text.question_text)
-    console.log(text)
+    // const { questions } = this.state;
+    // console.log(questions)
+    // var text = questions.filter(text => text.id==3).map(text => text.question_text)
+    // console.log(text)
     return (
-      <div>
+      <div style = {SelectStyle} >
+      
         {/* <h1>First Compliance</h1> */}
         
-        <div>
+        {/* <div>
           {questions.map(data =>
           <div key={data.id}>
             <a>{data.question_text}</a>
           </div>
           )}
-        </div>
+        </div> */}
 
-
-        <MultiSelectField example={text}/>
+        <Pagination_App />
+        {/* <MultiSelectField example={text}/> */}
         
-        <div>
-        <Pagination bsSize="large">{items}</Pagination>
-        <br />
-        </div>
-
 
         {/* <Creatable/>
         <CitiesField/> */}
