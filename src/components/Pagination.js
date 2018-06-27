@@ -12,7 +12,8 @@ class Pagination_App extends Component {
         super(props);
         this.state = {
           activeNumber: 2,
-          items: []
+          items: [],
+          selected_value: []
         };
         // this.handleclick = this.handleclick.bind(this);
 
@@ -21,6 +22,7 @@ class Pagination_App extends Component {
     create_item(active_num) {
         this.setState({activeNumber: active_num})
         console.log(active_num)
+        this.setState({selected_value: []})
         var new_items = []
         for (let number = 2; number <= 4; number++) {    
             new_items.push(
@@ -61,11 +63,12 @@ class Pagination_App extends Component {
             <Pagination.Last />
             </Pagination>
             {/* <br /> */}
-
-            <MultiSelectField q_id={this.state.activeNumber}/>
             </div>
-            <div><h1> {this.state.activeNumber} </h1></div>
-    
+
+            <div>
+            <MultiSelectField q_id={this.state.activeNumber} value={this.state.selected_value}/>
+            </div>
+            
           </div>
         );
       }

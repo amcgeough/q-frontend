@@ -4,161 +4,108 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 // import 'react-select/dist/react-select.css';
 import '../example.css';
-
-// async function question_request() {
-// 	try {
-// 	  const question_result =  await fetch('http://127.0.0.1:8000/api/');
-//   //    const choice =  await fetch('http://127.0.0.1:8000/api/choice');
-// 	  return await question_result.json();
-//   //    var quizChoice1 =  await choice.json();
-// 	}
-// 	catch (rejectedValue) {
-// 	}
-//   }
-  
-// async function choice_request() {
-// 	try {
-//   //    const res =  await fetch('http://127.0.0.1:8000/api/');
-// 	  const choice =  await fetch('http://127.0.0.1:8000/api/choice');
-// 	  return await choice.json();
-//   //    var quizChoice1 =  await choice.json();
-// 	}
-// 	catch (rejectedValue) {
-// 	}
-//   }
-
-// //Questions
-// var i, Questions_List=[]
-// function question_data(questions) {
-// 	for (i = 0; i < questions.length; i++)
-// 		{if  (questions[i].id == 3)
-// 		Questions_List.push({id: questions[i].id, question: questions[i].question_text, type: questions[i].choice_type })
-// 		}
-	
-// 	console.log(Questions_List)
-// 	// console.log(Questions_List[0].question)
-// 	// return ((Questions_List))
-// }
-
-// function Questions() { return question_request().then(function(result) {
-
-// 	question_data(result)
-// 	// console.log(Questions_List[0].question)
-// 	return Questions_List[0].question
-//  })}
- 
-// Questions();
-
-// function Questions2() { return question_request().then(function(result) {
-// 	return Questions_List[0].question
-//  })}
-
-// console.log(Questions2())
-//  console.log("test" + Questions_List)
-
-
-//Choices
-// var j
-// function choice_data(choices) {
-// 		for (j = 0; j < choices.length; j++)
-// 			{if (choices[j].question == 3)
-// 			Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text, question: choices[j].question})
-// 			}
-// 	 	console.log(Choice_Options)
-// }
-
-// function Choices() { return choice_request().then(function(result1) {
-
-// 	choice_data(result1)
-//  })}
-
-// Choices();
-
-
-
-// const WHY_WOULD_YOU = [
-// 	{ label: 'Chocolate (are you crazy?)', value: 'Switch', disabled: true },
-// ].concat(Choice_Options.slice(1));
-
-
-// const SelectStyle = {width:'33%', padding:'30px'}
-
-
-// COMPONENT
+import Button from 'react-bootstrap/lib/Button';
 
 function choice_data(choices, q_id) {
 	var j, Choice_Options = []
 	for (j = 0; j < choices.length; j++)
 		{if (choices[j].question == q_id)
-		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text, question: choices[j].question})
+		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text, question: choices[j].question,
+									compliance_status: choices[j].compliance_status})
 		}
 	return Choice_Options
-	// this.setState({options: Choice_Options})
-	// console.log(options)
 		}
 
+const buttonStyle = {marginTop:'10px', float:'right'}
 
-var MultiSelectField = createClass({
-	displayName: 'MultiSelectField',
-	propTypes: {
-		label: PropTypes.oneOf([PropTypes.object, PropTypes.array, PropTypes.string]),
-	},
+class MultiSelectField extends React.Component {
 
-		
-	getInitialState () {
-		return {
-			removeSelected: true,
+// var MultiSelectField = createClass({
+// 	displayName: 'MultiSelectField',
+// 	propTypes: {
+// 		label: PropTypes.oneOf([PropTypes.object, PropTypes.array, PropTypes.string]),
+// 	},
+
+	constructor(props) {
+		super(props);
+
+	this.state = 
+		 {
+			removeSelected: false,
 			disabled: false,
 			crazy: false,
 			stayOpen: false,
 			value: [],
+			compliance_status: [],
 			rtl: false,
 			questions:[],
-			choices2:[],
+			choices:[],
+			subquestions: [],
+			subchoices: [],
 			Choice_Options:[]
-
 		};
-	},
+	this.handleSelectChange = this.handleSelectChange.bind(this);
+
+	}
+
 	handleSelectChange (value) {
 		console.log('You\'ve selected:', value);
 		this.setState({ value });
-	},
+	}
+
+	
 	toggleCheckbox (e) {
 		this.setState({
 			[e.target.name]: e.target.checked,
 		});
-	},
+	}
 	toggleRtl (e) {
 		let rtl = e.target.checked;
 		this.setState({ rtl });
-	},
+	}
 
 	componentWillMount() {
 		fetch('http://127.0.0.1:8000/api/').then(response => response.json())
 		.then(data => this.setState({ questions: data }));
 		
 		fetch('http://127.0.0.1:8000/api/choice').then(response => response.json())
-		.then(data => this.setState({ choices2: data }));
+		.then(data => this.setState({ choices: data }));
 
-		  },
+		fetch('http://127.0.0.1:8000/api/subquestions').then(response => response.json())
+		.then(data => this.setState({ subquestions: data }));
 
-  
+		fetch('http://127.0.0.1:8000/api/subchoices').then(response => response.json())
+		.then(data => this.setState({ subchoices: data }));
 
+		  }
+
+	componentWillReceiveProps(newProps) {
+			this.setState({value: newProps.value});
+		}
+
+	handleSubmit() {
+		console.log('submitted')
+	}
+
+	
 	render () {
 	
-		const { questions, choices2, Choice_Options } = this.state;
-		console.log(questions)
-		console.log(choices2)
+		const { questions, choices, subquestions, subchoices, Choice_Options } = this.state;
+		
+		var outcome = choices.filter(choice => choice.question==this.props.q_id).filter(choice => choice.choice_text==this.state.value).map(choice => choice.compliance_status)
+
+		var subquestion_text = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.question_text)
+
 		var text = questions.filter(text => text.id==this.props.q_id).map(text => text.question_text)
-		console.log(text)
-	
 
+		var choice_type = questions.filter(choice => choice.id==this.props.q_id).map(choice => choice.choice_type)
 
-		const options = choice_data(choices2, this.props.q_id)
+		var choice_type2 = (choice_type=="1") ? false : true
 
-		const { crazy, disabled, stayOpen, value, autoFocus, autosize } = this.state;
-		// const options = Choice_Options;
-		// var question_string = Questions()
+		const options = choice_data(choices, this.props.q_id)
+
+		const { crazy, disabled, stayOpen, value, autoFocus, autosize, type, compliance_status } = this.state;
+
 		var question_string = ''
 		return (
 
@@ -167,47 +114,38 @@ var MultiSelectField = createClass({
 
 				<h3 className="section"> {text} </h3>
 				<Select
-					closeOnSelect={!stayOpen}
+					closeOnSelect={false}
 					disabled={disabled}
-					multi
+					multi={choice_type2}
 					onChange={this.handleSelectChange}
 					options={options}
 					placeholder="Select your answer(s)"
-          			removeSelected={this.state.removeSelected}
+          			removeSelected={true}
 					rtl={this.state.rtl}
 					simpleValue
 					value={value}
+					compliance_status={compliance_status}
 					autoFocus={!autoFocus}
 					autosize={!autosize}
-
 				/>
-				</div>
 
-				{/* <div className="checkbox-list">
+			</div>
+			<div>
+				<Button bsStyle="primary" style={buttonStyle} onClick={this.handleSubmit}> 
+				Submit
+				</Button>
+			</div>
+
+					{/* <div className="checkbox-list">
 					<label className="checkbox">
 						<input type="checkbox" className="checkbox-control" name="removeSelected" checked={this.state.removeSelected} onChange={this.toggleCheckbox} />
 						<span className="checkbox-label">Remove selected options</span>
-					</label>
-					<label className="checkbox">
-						<input type="checkbox" className="checkbox-control" name="disabled" checked={this.state.disabled} onChange={this.toggleCheckbox} />
-						<span className="checkbox-label">Disable the control</span>
-					</label>
-					<label className="checkbox">
-						<input type="checkbox" className="checkbox-control" name="crazy" checked={crazy} onChange={this.toggleCheckbox} />
-						<span className="checkbox-label">I don't like Chocolate (disabled the option)</span>
-					</label>
-					<label className="checkbox">
-						<input type="checkbox" className="checkbox-control" name="stayOpen" checked={stayOpen} onChange={this.toggleCheckbox}/>
-						<span className="checkbox-label">Stay open when an Option is selected</span>
-					</label>
-					<label className="checkbox">
-						<input type="checkbox" className="checkbox-control" name="rtl" checked={this.state.rtl} onChange={this.toggleCheckbox} />
-						<span className="checkbox-label">rtl</span>
 					</label>
 				</div> */}
 			</div>
 		);
 	}
-})
+}
 
-module.exports = MultiSelectField;
+// module.exports = MultiSelectField;
+export default MultiSelectField;
