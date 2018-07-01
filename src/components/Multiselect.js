@@ -5,16 +5,29 @@ import Select from 'react-select';
 // import 'react-select/dist/react-select.css';
 import '../example.css';
 import Button from 'react-bootstrap/lib/Button';
+import PanelGroup from  'react-bootstrap/lib/PanelGroup';
+import Panel from 'react-bootstrap/lib/Panel';
+import Glyphicon from 'react-bootstrap/lib/Glyphicon';
+import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 
 function choice_data(choices, q_id) {
 	var j, Choice_Options = []
 	for (j = 0; j < choices.length; j++)
 		{if (choices[j].question == q_id)
-		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text, question: choices[j].question,
-									compliance_status: choices[j].compliance_status})
+		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
 		}
 	return Choice_Options
 		}
+
+function subchoice_data(subchoices, subq_id) {
+	var j, Sub_Choice_Options = []
+	for (j = 0; j < subchoices.length; j++)
+		{if (subchoices[j].sub_question == subq_id)
+			Sub_Choice_Options.push({ label: subchoices[j].choice_text, value: subchoices[j].choice_text})
+		}
+	return Sub_Choice_Options
+		}
+		
 
 const buttonStyle = {marginTop:'10px', float:'right'}
 
@@ -35,25 +48,46 @@ class MultiSelectField extends React.Component {
 			disabled: false,
 			crazy: false,
 			stayOpen: false,
-			value: [],
+			value: null,
+			value2: null,
 			compliance_status: [],
 			rtl: false,
 			questions:[],
 			choices:[],
 			subquestions: [],
 			subchoices: [],
-			Choice_Options:[]
+			Choice_Options:[],
+			active_Panel: 0
 		};
 	this.handleSelectChange = this.handleSelectChange.bind(this);
+	this.handleSelectChangeSub = this.handleSelectChangeSub.bind(this);
+	this.clearValue = this.clearValue.bind(this);
 
 	}
 
 	handleSelectChange (value) {
 		console.log('You\'ve selected:', value);
-		this.setState({ value });
+		this.setState({ value: value });
 	}
 
-	
+	handleSelectChangeSub (value) {
+		console.log('You\'ve selected:', value);
+		this.setState({value2: value})
+		console.log(this.state.value2)
+
+	}
+
+	clearValue() {
+		this.setState({value2: null})
+		// this.setState({active_Panel: j})
+		// console.log(active_Panel)
+	}
+
+	// setValueType(choice_type) {
+	// 	(choice_type==1) : this.setState({value:''}) ? this.setState({value:null})
+
+	// }
+
 	toggleCheckbox (e) {
 		this.setState({
 			[e.target.name]: e.target.checked,
@@ -94,55 +128,131 @@ class MultiSelectField extends React.Component {
 		
 		var outcome = choices.filter(choice => choice.question==this.props.q_id).filter(choice => choice.choice_text==this.state.value).map(choice => choice.compliance_status)
 
+		var subquestion_id = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.id)
 		var subquestion_text = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.question_text)
-
+		console.log(subquestion_text)
 		var text = questions.filter(text => text.id==this.props.q_id).map(text => text.question_text)
 
 		var choice_type = questions.filter(choice => choice.id==this.props.q_id).map(choice => choice.choice_type)
-
 		var choice_type2 = (choice_type=="1") ? false : true
 
 		const options = choice_data(choices, this.props.q_id)
+		
 
 		const { crazy, disabled, stayOpen, value, autoFocus, autosize, type, compliance_status } = this.state;
 
-		var question_string = ''
+		var panel=[], j
+
+		if (subquestion_text.length>0)
+			{
+			for (j = 0; j < subquestion_text.length; j++)
+			{
+			const sub_options = subchoice_data(subchoices, subquestion_id[j])
+			console.log(sub_options)
+
+			// this.props.window['value' + j] = 'oh'+j
+			
+			panel.push(
+			// <PanelGroup>
+			<Panel style={{marginTop:'65px', marginLeft:'200px'}} bsStyle="primary"  
+					eventKey={j}  >
+			<Panel.Heading >
+				<Panel.Title toggle>
+				{subquestion_text[j]}
+				<Glyphicon glyph="chevron-down" style={{float:'right'}} />
+
+				</Panel.Title>
+			</Panel.Heading>
+			<Panel.Collapse >
+				<Panel.Body collapsible>
+				<Select
+					closeOnSelect={false}
+					disabled={disabled}
+					multi={choice_type2}
+					onChange={this.handleSelectChangeSub}
+					options={sub_options}
+					// placeholder="Select your answer(s)"
+          			removeSelected={true}
+					rtl={this.state.rtl}
+					simpleValue
+					value={this.state.value2}
+					autoFocus={!autoFocus}
+					autosize={!autosize}
+					delimiter='|'
+				/>
+				<div>
+				<Button bsStyle="primary" style={buttonStyle} onClick={this.handleSubmit}> 
+				Submit
+				</Button>
+				</div>
+
+				</Panel.Body>
+			</Panel.Collapse>
+			</Panel>
+			// </PanelGroup>
+			)}
+			}
+		else
+			{
+			panel = []
+			}
+		
+
 		return (
 
 			<div className="section">
+			
+			{/* <Jumbotron style={{padding: '20px', borderRadius:'20px', border:'solid', borderWidth:'1px', borderColor:'grey'}}> */}
 			<div >
-
-				<h3 className="section"> {text} </h3>
+				<h3 className="section" style={{marginBottom:'20px'}}  > {text} </h3>
 				<Select
 					closeOnSelect={false}
 					disabled={disabled}
 					multi={choice_type2}
 					onChange={this.handleSelectChange}
 					options={options}
-					placeholder="Select your answer(s)"
+					// placeholder="Select your answer(s)"
           			removeSelected={true}
 					rtl={this.state.rtl}
 					simpleValue
-					value={value}
-					compliance_status={compliance_status}
+					value={this.state.value}
 					autoFocus={!autoFocus}
 					autosize={!autosize}
+					style={{marginTop:'10px'}}
+					delimiter='|'
+					// pageSize={2}
 				/>
 
 			</div>
 			<div>
-				<Button bsStyle="primary" style={buttonStyle} onClick={this.handleSubmit}> 
+				<Button  bsStyle="primary" style={buttonStyle} onClick={this.handleSubmit}> 
 				Submit
 				</Button>
 			</div>
 
-					{/* <div className="checkbox-list">
-					<label className="checkbox">
-						<input type="checkbox" className="checkbox-control" name="removeSelected" checked={this.state.removeSelected} onChange={this.toggleCheckbox} />
-						<span className="checkbox-label">Remove selected options</span>
-					</label>
-				</div> */}
+			<br></br><br></br>
+			{/* </Jumbotron> */}
+
+			<div>
+			<PanelGroup accordion id="accordion-example" onSelect={this.clearValue} defaultActiveKey={0}
+			// accordion={true} defaultActiveKey={0} activeKey={this.state.active_Panel}  
+			> 
+			{panel}
+			</PanelGroup>
 			</div>
+
+			</div>
+
+			// {/* <h2 className="section"> {subquestion_text[0]} </h2> */}
+
+			
+
+			// 		{/* <div className="checkbox-list">
+			// 		<label className="checkbox">
+			// 			<input type="checkbox" className="checkbox-control" name="removeSelected" checked={this.state.removeSelected} onChange={this.toggleCheckbox} />
+			// 			<span className="checkbox-label">Remove selected options</span>
+			// 		</label>
+			// 	</div> */}
 		);
 	}
 }

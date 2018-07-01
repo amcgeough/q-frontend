@@ -5,6 +5,7 @@ import MultiSelectField from './components/Multiselect.js'
 import Creatable from './components/Creatable.js'
 import CitiesField from './components/Virtualized.js'
 import Pagination_App from './components/Pagination.js'
+import Navigation_App from './components/NavigationApp.js';
 
 // import './example.less';
 
@@ -20,7 +21,9 @@ const Choice = [
 ];
 
 
-const SelectStyle = {width:'50%', padding:'30px'}
+const SelectStyle = {width:'50%', padding:'30px', width: '700px',
+marginLeft: 'auto',
+marginRight: 'auto'}
 
 
 class App extends Component {
@@ -43,6 +46,9 @@ class App extends Component {
     // var text = questions.filter(text => text.id==3).map(text => text.question_text)
     // console.log(text)
     return (
+      <div>
+      <Navigation_App />
+
       <div style = {SelectStyle} >
       
         {/* <h1>First Compliance</h1> */}
@@ -55,13 +61,15 @@ class App extends Component {
           )}
         </div> */}
 
-        <Pagination_App />
+        <Pagination_App key={1.5}/>
         {/* <MultiSelectField example={text}/> */}
         
 
         {/* <Creatable/>
         <CitiesField/> */}
       </div>
+      </div>
+
     );
   }
 }
