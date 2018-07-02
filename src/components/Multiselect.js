@@ -10,6 +10,10 @@ import Panel from 'react-bootstrap/lib/Panel';
 import Glyphicon from 'react-bootstrap/lib/Glyphicon';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 
+import Calendar from 'rc-calendar';
+import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
+import 'rc-calendar/assets/index.css';
+
 function choice_data(choices, q_id) {
 	var j, Choice_Options = []
 	for (j = 0; j < choices.length; j++)
@@ -30,6 +34,31 @@ function subchoice_data(subchoices, subq_id) {
 		
 
 const buttonStyle = {marginTop:'10px', float:'right'}
+
+
+
+const format = 'YYYY-MM-DD HH:mm:ss';
+
+function getFormat(time) {
+  return time ? format : 'YYYY-MM-DD';
+}
+
+function onStandaloneSelect(value) {
+	console.log('onStandaloneSelect');
+	console.log(value && value.format(format));
+	}
+
+function onStandaloneSelectRange(value) {
+		console.log('onSelect');
+		console.log(value[0] && value[0].format(format));
+		console.log(value[1] && value[1].format(format));
+	}
+	  
+function changetorange()
+{
+	this.setState({date_range:1})
+}
+
 
 class MultiSelectField extends React.Component {
 
@@ -57,12 +86,13 @@ class MultiSelectField extends React.Component {
 			subquestions: [],
 			subchoices: [],
 			Choice_Options:[],
-			active_Panel: 0
+			active_Panel: 0,
+			date_range:0
 		};
 	this.handleSelectChange = this.handleSelectChange.bind(this);
 	this.handleSelectChangeSub = this.handleSelectChangeSub.bind(this);
 	this.clearValue = this.clearValue.bind(this);
-
+	this.onShowTimeChange = this.onShowTimeChange.bind(this)
 	}
 
 	handleSelectChange (value) {
@@ -83,6 +113,12 @@ class MultiSelectField extends React.Component {
 		// console.log(active_Panel)
 	}
 
+	onShowTimeChange() {
+		this.setState({date_range: !this.state.date_range})
+		// console.log(this.state.date_range)
+
+		}
+	
 	// setValueType(choice_type) {
 	// 	(choice_type==1) : this.setState({value:''}) ? this.setState({value:null})
 
@@ -120,6 +156,7 @@ class MultiSelectField extends React.Component {
 	handleSubmit() {
 		console.log('submitted')
 	}
+
 
 	
 	render () {
@@ -198,14 +235,59 @@ class MultiSelectField extends React.Component {
 			}
 		
 
-		return (
+		var qType = []
+		var dateType = []
 
-			<div className="section">
+		if (this.state.date_range==0)
+		{
+			console.log('test', this.state.date_range)
+			dateType.push(
+				<div>
+				<Calendar
+				style={{marginLeft:'150px'}}
+				onSelect={onStandaloneSelect}
+				// format={formatStr}
+			/>
+			<label>
+			<input
+			  type="checkbox"
+			//   checked={changetorange}
+			  onChange={this.onShowTimeChange}
+			/>
+          	Date Range
+			</label>
+			</div>
+			)
+			}
+
+		else {
+			dateType.push(
+			<div>
+			<RangeCalendar
+			onSelect={onStandaloneSelectRange}
+			/>
+		  <label>
+          <input
+            type="checkbox"
+            // checked={changetorange}
+            onChange={this.onShowTimeChange}
+          />
+          Date Range
+		</label>
+		</div>
+		)
+		}
 			
-			{/* <Jumbotron style={{padding: '20px', borderRadius:'20px', border:'solid', borderWidth:'1px', borderColor:'grey'}}> */}
-			<div >
-				<h3 className="section" style={{marginBottom:'20px'}}  > {text} </h3>
-				<Select
+	console.log({dateType})
+
+	if (choice_type=="4")
+		{		
+		qType.push(dateType)
+		}
+
+		else
+		{
+			qType.push(<Select
 					closeOnSelect={false}
 					disabled={disabled}
 					multi={choice_type2}
@@ -221,7 +303,17 @@ class MultiSelectField extends React.Component {
 					style={{marginTop:'10px'}}
 					delimiter='|'
 					// pageSize={2}
-				/>
+				/>)
+		}
+
+		return (
+
+			<div className="section">
+			
+			{/* <Jumbotron style={{padding: '20px', borderRadius:'20px', border:'solid', borderWidth:'1px', borderColor:'grey'}}> */}
+			<div >
+				<h3 className="section" style={{marginBottom:'20px'}}  > {text} </h3>
+				{qType}
 
 			</div>
 			<div>

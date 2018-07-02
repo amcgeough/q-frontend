@@ -25,10 +25,9 @@ class Pagination_App extends Component {
         this.setState({activeNumber: active_num})
         console.log(active_num)
         this.setState({selected_value: null})
-        var x = this.state.questions
         var new_items = []
         // for (let number = 2; number <= 4; number++) {
-        x.forEach(number => {
+        this.state.questions.forEach(number => {
             new_items.push(
                 <Pagination.Item
                     active={number===active_num}
@@ -43,27 +42,43 @@ class Pagination_App extends Component {
     
 
     componentWillMount() {
-        for (let number = 2; number <= 4; number++) {    
-            this.state.items.push(
-            <Pagination.Item 
-                active={number===this.state.activeNumber} 
-                onClick={this.create_item.bind(this, number)}
-            >{number} </Pagination.Item>
-        );
-        }
-    
-        fetch('http://127.0.0.1:8000/api').then(response => response.json())
-        .then(data => this.setState({ questions: data.map(text => text.id).sort() }));
         
+        (async() => {
+            try {
+              var response = await fetch('http://127.0.0.1:8000/api');
+              var data = await response.json();
+              var x = await data.map(text => text.id).sort()
+              this.setState({questions: x})
+              console.log(x)
+              var y = []
+              x.forEach(number => {
+                // for (let number = 2; number <= 4; number++) {    
+                    y.push(
+                    <Pagination.Item 
+                        active={number===this.state.activeNumber} 
+                        onClick={this.create_item.bind(this, number)}
+                    >{number} </Pagination.Item>
+                )
+                })
+            this.setState({items: y})
+
+            // console.log(y)
+            //   this.setState(items:y)
+
+            //   console.log(data);
+            } catch (e) {
+              console.log("Booo")
+            }
+          })();
+          
         }
         
   
     render() {
+        console.log(this.state.items)
+
         const now = 60;
         const now2 = 30
-        // var question_ids = this.state.questions.map(text => text.id)
-        // console.log(question_ids.sort())
-        console.log(this.state.questions)
 
         return (
             <div>
