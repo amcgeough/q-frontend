@@ -12,7 +12,13 @@ import Jumbotron from 'react-bootstrap/lib/Jumbotron';
 
 import Calendar from 'rc-calendar';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
+import Checkbox from 'rc-checkbox';
+import Dropzone from 'react-dropzone'
+
 import 'rc-calendar/assets/index.css';
+import 'rc-checkbox/assets/index.css';
+
+
 
 function choice_data(choices, q_id) {
 	var j, Choice_Options = []
@@ -33,7 +39,7 @@ function subchoice_data(subchoices, subq_id) {
 		}
 		
 
-const buttonStyle = {marginTop:'10px', float:'right'}
+const buttonStyle = {marginTop:'10px', float:'center'}
 
 
 
@@ -87,12 +93,16 @@ class MultiSelectField extends React.Component {
 			subchoices: [],
 			Choice_Options:[],
 			active_Panel: 0,
-			date_range:0
+			date_range:0,
+			files:[]
+
 		};
 	this.handleSelectChange = this.handleSelectChange.bind(this);
 	this.handleSelectChangeSub = this.handleSelectChangeSub.bind(this);
 	this.clearValue = this.clearValue.bind(this);
 	this.onShowTimeChange = this.onShowTimeChange.bind(this)
+	this.handleSubmitText = this.handleSubmitText.bind(this)
+
 	}
 
 	handleSelectChange (value) {
@@ -157,8 +167,17 @@ class MultiSelectField extends React.Component {
 		console.log('submitted')
 	}
 
-
+	handleSubmitText(event) {
+		alert('An essay was submitted: ' + this.state.textboxvalue);
+		event.preventDefault();
+	  }
 	
+	  onDrop(files) {
+		this.setState({
+		  files
+		});
+	  }
+
 	render () {
 	
 		const { questions, choices, subquestions, subchoices, Choice_Options } = this.state;
@@ -191,12 +210,15 @@ class MultiSelectField extends React.Component {
 			
 			panel.push(
 			// <PanelGroup>
-			<Panel style={{marginTop:'65px', marginLeft:'200px'}} bsStyle="primary"  
+			<Panel style={{marginTop:'25px', marginLeft:'200px'}} bsStyle="primary"  
 					eventKey={j}  >
 			<Panel.Heading >
 				<Panel.Title toggle>
-				{subquestion_text[j]}
-				<Glyphicon glyph="chevron-down" style={{float:'right'}} />
+				<div style={{float:'left'}}>
+				<h3 style={{ fontSize:'16px', display:'inline'}}> {this.props.q_id}.{j+1} </h3>
+				</div>
+				<h3 style={{fontSize:'18px', display:'inline'}}> {subquestion_text[j]} </h3>
+				<Glyphicon glyph="chevron-down" style={{float:'right', display:'inline'}} />
 
 				</Panel.Title>
 			</Panel.Heading>
@@ -213,7 +235,7 @@ class MultiSelectField extends React.Component {
 					rtl={this.state.rtl}
 					simpleValue
 					value={this.state.value2}
-					autoFocus={!autoFocus}
+					autoFocus={true}
 					autosize={!autosize}
 					delimiter='|'
 				/>
@@ -243,19 +265,25 @@ class MultiSelectField extends React.Component {
 			console.log('test', this.state.date_range)
 			dateType.push(
 				<div>
+				<div>
 				<Calendar
-				style={{marginLeft:'150px'}}
+				style={{display:'inline-block'}}
 				onSelect={onStandaloneSelect}
 				// format={formatStr}
 			/>
+			</div>
+			<br/>
+			<div style={{textAlign:'left'}}>
 			<label>
-			<input
-			  type="checkbox"
-			//   checked={changetorange}
-			  onChange={this.onShowTimeChange}
+			{/* <input */}
+			<Checkbox
+			//   type="checkbox"
+			style={{display:'inline-block'}}
+			onChange={this.onShowTimeChange}
 			/>
-          	Date Range
+          	&nbsp; Date Range
 			</label>
+			</div>
 			</div>
 			)
 			}
@@ -263,17 +291,24 @@ class MultiSelectField extends React.Component {
 		else {
 			dateType.push(
 			<div>
+			<div>
 			<RangeCalendar
+			style={{display:'inline-block'}}
 			onSelect={onStandaloneSelectRange}
 			/>
+			</div>
+			<br/>
+			<div style={{textAlign:'left'}}>
 		  <label>
-          <input
-            type="checkbox"
-            // checked={changetorange}
-            onChange={this.onShowTimeChange}
+          {/* <input
+			type="checkbox" */}
+			<Checkbox
+			style={{display:'inline-block'}}
+			onChange={this.onShowTimeChange}
           />
-          Date Range
-		</label>
+		  &nbsp; Date Range
+		  </label>
+		</div>
 		</div>
 		)
 		}
@@ -284,8 +319,56 @@ class MultiSelectField extends React.Component {
 		{		
 		qType.push(dateType)
 		}
+	
+	else if (choice_type=="3")
+		{
+		qType.push(
+			
+			<form 
+			// onSubmit={this.handleSubmitText}
+			>
+			<label>
+			  <textarea 
+			  value={this.state.value}
+			  rows={9}
+			  cols={72}
+			  autoFocus={!autoFocus}
+		  
+			//   onChange={this.handleChange} 
+			  />
+			</label>
+			{/* <input type="submit" value="Submit" /> */}
+		  </form>
+	)
+		}
 
-		else
+		else if (choice_type=="5" || choice_type=="6")
+		{
+		qType.push(
+			
+		<section >
+        <div className="dropzone"  style={{display:'inline-block'}}>
+          <Dropzone onDrop={this.onDrop.bind(this)}  >  
+            <p style={{fontSize:'16px', padding:'5px 5px 5px 5px'}}>
+			Drop files here or click to select files to upload.</p>
+
+          </Dropzone>
+        </div>
+		<br/>
+        <aside>
+          {/* <h2>Dropped files</h2> */}
+          <ul>
+            {
+              this.state.files.map(f => <li key={f.name}>{f.name} - {f.size} bytes</li>)
+            }
+          </ul>
+        </aside>
+      </section>
+	)
+		}
+
+
+	else
 		{
 			qType.push(<Select
 					closeOnSelect={false}
@@ -298,7 +381,7 @@ class MultiSelectField extends React.Component {
 					rtl={this.state.rtl}
 					simpleValue
 					value={this.state.value}
-					autoFocus={!autoFocus}
+					autoFocus={true}
 					autosize={!autosize}
 					style={{marginTop:'10px'}}
 					delimiter='|'
@@ -312,7 +395,10 @@ class MultiSelectField extends React.Component {
 			
 			{/* <Jumbotron style={{padding: '20px', borderRadius:'20px', border:'solid', borderWidth:'1px', borderColor:'grey'}}> */}
 			<div >
-				<h3 className="section" style={{marginBottom:'20px'}}  > {text} </h3>
+				<h3 className="section" 
+					style={{marginBottom:'20px', fontSize:'20px'}} > 
+					{text} </h3>
+
 				{qType}
 
 			</div>

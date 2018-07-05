@@ -81,10 +81,10 @@ class Pagination_App extends Component {
         const now2 = 30
 
         return (
-            <div>
+            <div style={{textAlign:'center'}}>
             <ProgressBar now={now} label={`${now}%`} />
             <Jumbotron style={{padding: '20px', borderRadius:'20px'}}>
-            <Pagination  bsSize="small" style={{width: '400px', float:'right'}}>
+            <Pagination  bsSize="small">
             <Pagination.First />
             <Pagination.Prev />
             
@@ -94,7 +94,7 @@ class Pagination_App extends Component {
             <Pagination.Last />
             </Pagination>
             {/* <br /> */}
-            <br/><br/><br/>
+            <br/>
             <div>
             <MultiSelectField key={1} q_id={this.state.activeNumber} value={this.state.selected_value}/>
             </div>
