@@ -9,16 +9,23 @@ import PanelGroup from  'react-bootstrap/lib/PanelGroup';
 import Panel from 'react-bootstrap/lib/Panel';
 import Glyphicon from 'react-bootstrap/lib/Glyphicon';
 import Jumbotron from 'react-bootstrap/lib/Jumbotron';
+import Tooltip from 'react-bootstrap/lib/Tooltip';
+import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
 
 import Calendar from 'rc-calendar';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
 import Checkbox from 'rc-checkbox';
 import Dropzone from 'react-dropzone'
+import Typist from 'react-typist';
 
 import 'rc-calendar/assets/index.css';
 import 'rc-checkbox/assets/index.css';
 
-
+const tooltip = (
+	<Tooltip id="tooltip">
+	  <strong>GDPR:</strong> This question is related to new GDPR rules which came into force in May 25th.
+	</Tooltip>
+  );
 
 function choice_data(choices, q_id) {
 	var j, Choice_Options = []
@@ -39,7 +46,7 @@ function subchoice_data(subchoices, subq_id) {
 		}
 		
 
-const buttonStyle = {marginTop:'10px', float:'center'}
+const buttonStyle = {marginTop:'10px', float:'center', marginBottom:'15px'}
 
 
 
@@ -94,7 +101,9 @@ class MultiSelectField extends React.Component {
 			Choice_Options:[],
 			active_Panel: 0,
 			date_range:0,
-			files:[]
+			files:[],
+			pastChoiceType:[],
+			text2:null
 
 		};
 	this.handleSelectChange = this.handleSelectChange.bind(this);
@@ -102,7 +111,6 @@ class MultiSelectField extends React.Component {
 	this.clearValue = this.clearValue.bind(this);
 	this.onShowTimeChange = this.onShowTimeChange.bind(this)
 	this.handleSubmitText = this.handleSubmitText.bind(this)
-
 	}
 
 	handleSelectChange (value) {
@@ -156,14 +164,18 @@ class MultiSelectField extends React.Component {
 
 		fetch('http://127.0.0.1:8000/api/subchoices').then(response => response.json())
 		.then(data => this.setState({ subchoices: data }));
+		
+		this.setState({text2: this.props.text});
 
 		  }
 
-	componentWillReceiveProps(newProps) {
-			this.setState({value: newProps.value});
-		}
+
+	updateFocus() {
+		this.refs.mySelectList.focus()
+	}
 
 	handleSubmit() {
+		alert('Submitted')
 		console.log('submitted')
 	}
 
@@ -172,14 +184,32 @@ class MultiSelectField extends React.Component {
 		event.preventDefault();
 	  }
 	
-	  onDrop(files) {
+	onDrop(files) {
 		this.setState({
 		  files
 		});
 	  }
 
+	componentWillReceiveProps(newProps) {
+		this.state.pastChoiceType.push(newProps.q_choice_type)
+		this.setState({text2: newProps.text});
+		// if(this.state.pastChoiceType.length>1) 
+		console.log('past '+this.state.pastChoiceType[this.state.pastChoiceType.length-2])
+
+		if (this.state.pastChoiceType[this.state.pastChoiceType.length-2]!=5 && 
+			this.state.pastChoiceType[this.state.pastChoiceType.length-2]!=6) 
+				{
+				console.log('ch '+newProps.q_choice_type)
+				this.refs.mySelectList.focus() 
+				}
+			// this.refs.mySelectList.focus()
+			this.setState({value: newProps.value});
+			}
+
+
 	render () {
-	
+		console.log('text: ' + this.state.text2)
+		
 		const { questions, choices, subquestions, subchoices, Choice_Options } = this.state;
 		
 		var outcome = choices.filter(choice => choice.question==this.props.q_id).filter(choice => choice.choice_text==this.state.value).map(choice => choice.compliance_status)
@@ -187,6 +217,9 @@ class MultiSelectField extends React.Component {
 		var subquestion_id = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.id)
 		var subquestion_text = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.question_text)
 		console.log(subquestion_text)
+		var subchoice_type = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.choice_type)
+		var subchoice_type2 = (subchoice_type=="1") ? false : true
+
 		var text = questions.filter(text => text.id==this.props.q_id).map(text => text.question_text)
 
 		var choice_type = questions.filter(choice => choice.id==this.props.q_id).map(choice => choice.choice_type)
@@ -195,8 +228,8 @@ class MultiSelectField extends React.Component {
 		const options = choice_data(choices, this.props.q_id)
 		
 
-		const { crazy, disabled, stayOpen, value, autoFocus, autosize, type, compliance_status } = this.state;
-
+		const { crazy, disabled, stayOpen, value, autosize, type, compliance_status } = this.state;
+		
 		var panel=[], j
 
 		if (subquestion_text.length>0)
@@ -205,19 +238,27 @@ class MultiSelectField extends React.Component {
 			{
 			const sub_options = subchoice_data(subchoices, subquestion_id[j])
 			console.log(sub_options)
-
+			var subchoice_type = subquestions.filter(text => text.question==subquestion_id[j]).filter(text => text.outcome==outcome).map(text => text.choice_type)
+			var subchoice_type2 = (subchoice_type=="1") ? false : true
+	
 			// this.props.window['value' + j] = 'oh'+j
 			
 			panel.push(
 			// <PanelGroup>
 			<Panel style={{marginTop:'25px', marginLeft:'200px'}} bsStyle="primary"  
-					eventKey={j}  >
+					eventKey={j} 
+					//onToggle={this.updateFocus}
+					>
+
 			<Panel.Heading >
-				<Panel.Title toggle>
+				<Panel.Title toggle >
 				<div style={{float:'left'}}>
 				<h3 style={{ fontSize:'16px', display:'inline'}}> {this.props.q_id}.{j+1} </h3>
 				</div>
-				<h3 style={{fontSize:'18px', display:'inline'}}> {subquestion_text[j]} </h3>
+				{/* <OverlayTrigger placement="top" overlay={tooltip} trigger="click" > */}
+				<h3 style={{fontSize:'17px', display:'inline'}}> {subquestion_text[j]} </h3>
+				{/* </OverlayTrigger > */}
+
 				<Glyphicon glyph="chevron-down" style={{float:'right', display:'inline'}} />
 
 				</Panel.Title>
@@ -225,17 +266,19 @@ class MultiSelectField extends React.Component {
 			<Panel.Collapse >
 				<Panel.Body collapsible>
 				<Select
+					style={{textAlign:'left', width:'300px', marginRight:'auto', marginLeft:'auto'}}
+					// ref="mySelectList"
 					closeOnSelect={false}
 					disabled={disabled}
-					multi={choice_type2}
+					multi={subchoice_type2}
 					onChange={this.handleSelectChangeSub}
 					options={sub_options}
-					// placeholder="Select your answer(s)"
+					placeholder={(subchoice_type=="1") ? "Select your answer" : "Select your answer(s)"}
           			removeSelected={true}
 					rtl={this.state.rtl}
 					simpleValue
 					value={this.state.value2}
-					autoFocus={true}
+					autoFocus
 					autosize={!autosize}
 					delimiter='|'
 				/>
@@ -244,6 +287,10 @@ class MultiSelectField extends React.Component {
 				Submit
 				</Button>
 				</div>
+
+				<OverlayTrigger placement="left" overlay={tooltip}  >
+				<Glyphicon glyph="info-sign" style={{ display:'inline'}} />
+				</OverlayTrigger>
 
 				</Panel.Body>
 			</Panel.Collapse>
@@ -267,7 +314,8 @@ class MultiSelectField extends React.Component {
 				<div>
 				<div>
 				<Calendar
-				style={{display:'inline-block'}}
+				ref="mySelectList"
+				style={{display:'inline-block', marginTop:'20px'}}
 				onSelect={onStandaloneSelect}
 				// format={formatStr}
 			/>
@@ -293,7 +341,8 @@ class MultiSelectField extends React.Component {
 			<div>
 			<div>
 			<RangeCalendar
-			style={{display:'inline-block'}}
+			ref="mySelectList"
+			style={{display:'inline-block', marginTop:'20px'}}
 			onSelect={onStandaloneSelectRange}
 			/>
 			</div>
@@ -314,7 +363,7 @@ class MultiSelectField extends React.Component {
 		}
 			
 	console.log({dateType})
-
+	//Question Type displayed
 	if (choice_type=="4")
 		{		
 		qType.push(dateType)
@@ -324,15 +373,16 @@ class MultiSelectField extends React.Component {
 		{
 		qType.push(
 			
-			<form 
+			<form  style={{marginTop:'20px'}}
 			// onSubmit={this.handleSubmitText}
 			>
 			<label>
-			  <textarea 
+			  <textarea
+			  ref="mySelectList"
 			  value={this.state.value}
 			  rows={9}
 			  cols={72}
-			  autoFocus={!autoFocus}
+			  autoFocus
 		  
 			//   onChange={this.handleChange} 
 			  />
@@ -347,8 +397,11 @@ class MultiSelectField extends React.Component {
 		qType.push(
 			
 		<section >
-        <div className="dropzone"  style={{display:'inline-block'}}>
-          <Dropzone onDrop={this.onDrop.bind(this)}  >  
+        <div className="dropzone"  style={{display:'inline-block', marginTop:'20px'}}>
+		  <Dropzone
+		  	// ref="mySelectList"
+			onDrop={this.onDrop.bind(this)}  
+			>  
             <p style={{fontSize:'16px', padding:'5px 5px 5px 5px'}}>
 			Drop files here or click to select files to upload.</p>
 
@@ -368,45 +421,74 @@ class MultiSelectField extends React.Component {
 		}
 
 
-	else
+	else if (choice_type=="1" || choice_type=="2")
 		{
 			qType.push(<Select
+					ref="mySelectList"
 					closeOnSelect={false}
 					disabled={disabled}
 					multi={choice_type2}
 					onChange={this.handleSelectChange}
 					options={options}
-					// placeholder="Select your answer(s)"
+					placeholder={(choice_type=="1") ? "Select your answer" : "Select your answer(s)"}
           			removeSelected={true}
 					rtl={this.state.rtl}
 					simpleValue
 					value={this.state.value}
-					autoFocus={true}
 					autosize={!autosize}
-					style={{marginTop:'10px'}}
+					style={{marginTop:'10px', textAlign:'left', width:'400px', marginRight:'auto', marginLeft:'auto'}}
 					delimiter='|'
+					autoFocus
 					// pageSize={2}
 				/>)
 		}
+		
 
 		return (
 
 			<div className="section">
 			
 			{/* <Jumbotron style={{padding: '20px', borderRadius:'20px', border:'solid', borderWidth:'1px', borderColor:'grey'}}> */}
+			
+
 			<div >
-				<h3 className="section" 
-					style={{marginBottom:'20px', fontSize:'20px'}} > 
-					{text} </h3>
+			<OverlayTrigger placement="top" overlay={tooltip} trigger="click" >
+
+				<a className="section" 
+					style={{marginBottom:'40px', fontSize:'22px', color:'black'}} > 
+					
+					{/* {this.state.text2} */}
+
+					<Typist avgTypingDelay={32} key={ this.props.text }
+					cursor= {
+							{show: true,
+							blink: false,
+							element: '|',
+							hideWhenDone: true,
+							hideWhenDoneDelay: 50}
+							} >
+					{this.props.text}
+					</Typist>
+
+					{/* {text}  */}
+					</a>
+					</OverlayTrigger>
 
 				{qType}
-
 			</div>
+			
+
 			<div>
 				<Button  bsStyle="primary" style={buttonStyle} onClick={this.handleSubmit}> 
 				Submit
 				</Button>
-			</div>
+			</div>			
+
+				<OverlayTrigger placement="left" overlay={tooltip}  >
+				<Glyphicon glyph="info-sign" style={{ display:'inline'}} />
+				</OverlayTrigger>
+
+
 
 			<br></br><br></br>
 			{/* </Jumbotron> */}
@@ -420,7 +502,6 @@ class MultiSelectField extends React.Component {
 			</div>
 
 			</div>
-
 			// {/* <h2 className="section"> {subquestion_text[0]} </h2> */}
 
 			

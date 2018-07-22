@@ -6,6 +6,9 @@ import Creatable from './components/Creatable.js'
 import CitiesField from './components/Virtualized.js'
 import Pagination_App from './components/Pagination.js'
 import Navigation_App from './components/NavigationApp.js';
+import Typist from 'react-typist';
+import {Tabs, Tab} from 'react-bootstrap';
+import Infinite from 'react-infinite'
 
 // import './example.less';
 
@@ -30,15 +33,51 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      questions: []
+      questions: [],
+      scroll_div: 'h1',
+      isInfiniteLoading: false,
+      elements: this.buildElements(0, 15)
     }
+    this.buildElements = this.buildElements.bind(this)
+    this.handleScroll = this.handleScroll.bind(this)
+
   }
 
 
-//   componentWillMount() {
-// fetch('http://127.0.0.1:8000/api/').then(response => response.json())
-// .then(data => this.setState({ questions: data }));
-//   }
+buildElements(start, end) {
+  var x = [];
+  for (var i = start; i < end; i++) {
+      x.push(
+      <div style={{background:'red', color:'white'}} key={i}>   {i}  </div>
+    )
+  }
+  return x;
+}
+
+
+handleScroll() {
+  this.setState({isInfiniteLoading: true});
+  
+  setTimeout( function() {
+    var elemLength = this.state.elements.length
+    var newelements = this.buildElements(elemLength, elemLength+1)
+    this.setState({
+      isInfiniteLoading: false,
+      elements: this.state.elements.concat(newelements)
+      })
+    }.bind(this), 2500)
+
+  console.log('infinity!')
+
+}
+  
+elementInfiniteLoad() {
+  return <div className="infinite-list-item">
+      Loading...
+  </div>;
+}
+
+
 
   render() {
     // const { questions } = this.state;
@@ -60,6 +99,19 @@ class App extends Component {
           </div>
           )}
         </div> */}
+        <Tabs defaultActiveKey={1} id="uncontrolled-tab-example" bsStyle="tabs" style={{marginBottom:'20px'}}>
+  <Tab eventKey={1} title="GDPR">
+  {/* <div>
+  <Pagination_App key={1.5}/>
+  </div> */}
+  </Tab>
+  <Tab eventKey={2} title="AML">
+
+  </Tab>
+  <Tab eventKey={3} title="AFC">
+
+  </Tab>
+</Tabs>
 
         <Pagination_App key={1.5}/>
         {/* <MultiSelectField example={text}/> */}
@@ -68,7 +120,27 @@ class App extends Component {
         {/* <Creatable/>
         <CitiesField/> */}
       </div>
+
+      <div>
+      <Infinite elementHeight={20}
+                containerHeight={200}
+                infiniteLoadBeginEdgeOffset={1}
+                // useWindowAsScrollContainer={false} 
+                // displayBottomUpwards={false}
+                // handleScroll={this.handleScroll}
+                onInfiniteLoad={this.handleScroll}
+                isInfiniteLoading={this.state.isInfiniteLoading}
+                loadingSpinnerDelegate={this.elementInfiniteLoad()}
+
+      >
+
+      {this.state.elements}
+
+      </Infinite>
       </div>
+
+      </div>
+
 
     );
   }
