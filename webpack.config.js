@@ -1,4 +1,11 @@
 require("babel-polyfill");
+
+// require('css-modules-require-hook')({
+//   generateScopedName: '[path][name]__[local]__[hash:base64:5]',
+//   extensions: ['.scss', '.css'],
+//   camelCase: true
+// });
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -10,8 +17,24 @@ module.exports = {
     path: path.join(__dirname, '/dist'),
     filename: 'index_bundle.js'
   },
+
+  
+
   module: {
     rules: [
+      // {
+      //   test: /\.scss$/,
+      //   include: [
+      //     path.join(__dirname, 'node_modules/wix-style-react'),
+      //     path.join(__dirname, 'node_modules/bootstrap-sass') // only if you use Grid component
+      //   ],
+      //   loaders: [
+      //     'style-loader',
+      //     'css-loader?modules&importLoaders=1&camelCase&localIdentName=[name]__[local]___[hash:base64:5]',
+      //     'sass-loader'
+      //   ]
+      // },
+
       {
         test: /\.js$/,
         exclude: /node_modules/,
@@ -33,7 +56,10 @@ module.exports = {
       //     }])
       //   )
       // },
-
+      {
+        test: /\.(png|jpg|jpeg|gif|svg)$/,
+        loader: 'file-loader'
+      },
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader']

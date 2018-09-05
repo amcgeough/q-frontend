@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 // import 'react-select/dist/react-select.css';
 import '../example.css';
-import Button from 'react-bootstrap/lib/Button';
+// import Button from 'react-bootstrap/lib/Button';
 import PanelGroup from  'react-bootstrap/lib/PanelGroup';
 import Panel from 'react-bootstrap/lib/Panel';
 import Glyphicon from 'react-bootstrap/lib/Glyphicon';
@@ -14,12 +14,35 @@ import OverlayTrigger from 'react-bootstrap/lib/OverlayTrigger';
 
 import Calendar from 'rc-calendar';
 import RangeCalendar from 'rc-calendar/lib/RangeCalendar';
-import Checkbox from 'rc-checkbox';
+import {  ToggleButtonGroup} from 'react-bootstrap';
 import Dropzone from 'react-dropzone'
 import Typist from 'react-typist';
 
 import 'rc-calendar/assets/index.css';
 import 'rc-checkbox/assets/index.css';
+
+
+
+import Card from '@material-ui/core/Card';
+import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+//mport Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import { withStyles } from '@material-ui/core/styles';
+
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Checkbox from '@material-ui/core/Checkbox';
+import Radio from '@material-ui/core/Radio';
+import Collapse from '@material-ui/core/Collapse';
+import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
+// import SaveIcon from '@material-ui/icons/Save';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import SaveIcon from '@material-ui/icons/Save';
+
 
 const tooltip = (
 	<Tooltip id="tooltip">
@@ -27,21 +50,78 @@ const tooltip = (
 	</Tooltip>
   );
 
-function choice_data(choices, q_id) {
+// function choice_data(choices, q_id, choice_type) {
+// 	var j, Choice_Options = []
+// 	const Type = (choice_type=="1") ? Radio : Checkbox
+
+// 	for (j = 0; j < choices.length; j++)
+// 		{if (choices[j].question == q_id) {
+// 		var texting = choices[j].choice_text
+// //		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
+// 		Choice_Options.push(
+// 							<Type style={{padding:'0px 0px 0px 10px', margin:'0px 0px 0px 0px'}} 
+// 										validationState={null} value={texting} >
+// 							{texting}
+// 							</Type>
+// 							)
+
+// 		}
+// 		}
+// 	return Choice_Options
+// 		}
+
+
+
+
+function choice_data(choices, q_id, choice_type) {
 	var j, Choice_Options = []
+	if (choice_type=="1") {
+
 	for (j = 0; j < choices.length; j++)
-		{if (choices[j].question == q_id)
-		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
+		{if (choices[j].question == q_id) {
+		var texting = choices[j].choice_text
+//		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
+		Choice_Options.push(
+						<FormControlLabel value={texting} control={<Radio />} label={texting} />
+							)
+
+		}
 		}
 	return Choice_Options
 		}
+	else {
+		for (j = 0; j < choices.length; j++)
+		{if (choices[j].question == q_id) {
+		var texting = choices[j].choice_text
+//		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
+		Choice_Options.push(
+							<FormControlLabel
+								control={
+								<Checkbox value={texting} />
+								}
+								label={texting}
+							/>
+							)
 
-function subchoice_data(subchoices, subq_id) {
-	var j, Sub_Choice_Options = []
-	for (j = 0; j < subchoices.length; j++)
-		{if (subchoices[j].sub_question == subq_id)
-			Sub_Choice_Options.push({ label: subchoices[j].choice_text, value: subchoices[j].choice_text})
 		}
+		}
+		return Choice_Options
+	}
+}
+
+
+
+function subchoice_data(subchoices, subq_id, choice_type) {
+	var j, Sub_Choice_Options = []
+	var type = (choice_type=="1") ? 'Radio' : 'Checkbox'
+	for (j = 0; j < subchoices.length; j++)
+		{if (subchoices[j].sub_question == subq_id) {
+			var subtexting = subchoices[j].choice_text
+//			Sub_Choice_Options.push({ label: subchoices[j].choice_text, value: subchoices[j].choice_text})
+			Sub_Choice_Options.push(<type validationState="success">{subtexting}</type>)
+
+			}
+			}
 	return Sub_Choice_Options
 		}
 		
@@ -72,7 +152,7 @@ function changetorange()
 	this.setState({date_range:1})
 }
 
-
+  
 class MultiSelectField extends React.Component {
 
 // var MultiSelectField = createClass({
@@ -103,7 +183,8 @@ class MultiSelectField extends React.Component {
 			date_range:0,
 			files:[],
 			pastChoiceType:[],
-			text2:null
+			text2:null,
+			expanded: false
 
 		};
 	this.handleSelectChange = this.handleSelectChange.bind(this);
@@ -111,8 +192,14 @@ class MultiSelectField extends React.Component {
 	this.clearValue = this.clearValue.bind(this);
 	this.onShowTimeChange = this.onShowTimeChange.bind(this)
 	this.handleSubmitText = this.handleSubmitText.bind(this)
+	this.handleExpandClick = this.handleExpandClick.bind(this)
+
 	}
 
+	handleExpandClick ()  {
+		this.setState(state => ({ expanded2: !state.expanded2 }));
+	  };
+	
 	handleSelectChange (value) {
 		console.log('You\'ve selected:', value);
 		this.setState({ value: value });
@@ -170,10 +257,6 @@ class MultiSelectField extends React.Component {
 		  }
 
 
-	updateFocus() {
-		this.refs.mySelectList.focus()
-	}
-
 	handleSubmit() {
 		alert('Submitted')
 		console.log('submitted')
@@ -193,6 +276,8 @@ class MultiSelectField extends React.Component {
 	componentWillReceiveProps(newProps) {
 		this.state.pastChoiceType.push(newProps.q_choice_type)
 		this.setState({text2: newProps.text});
+		this.setState({expanded: newProps.expanded});
+
 		// if(this.state.pastChoiceType.length>1) 
 		console.log('past '+this.state.pastChoiceType[this.state.pastChoiceType.length-2])
 
@@ -200,7 +285,7 @@ class MultiSelectField extends React.Component {
 			this.state.pastChoiceType[this.state.pastChoiceType.length-2]!=6) 
 				{
 				console.log('ch '+newProps.q_choice_type)
-				this.refs.mySelectList.focus() 
+				// this.refs.mySelectList.focus() 
 				}
 			// this.refs.mySelectList.focus()
 			this.setState({value: newProps.value});
@@ -225,8 +310,13 @@ class MultiSelectField extends React.Component {
 		var choice_type = questions.filter(choice => choice.id==this.props.q_id).map(choice => choice.choice_type)
 		var choice_type2 = (choice_type=="1") ? false : true
 
-		const options = choice_data(choices, this.props.q_id)
-		
+		const options = choice_data(choices, this.props.q_id, choice_type)
+		console.log('oops')
+		console.log(options)
+		console.log(choices)
+		const ToggleType = (choice_type=="1") ? 'radio' : 'checkbox'
+		console.log(ToggleType)
+
 
 		const { crazy, disabled, stayOpen, value, autosize, type, compliance_status } = this.state;
 		
@@ -255,17 +345,14 @@ class MultiSelectField extends React.Component {
 				<div style={{float:'left'}}>
 				<h3 style={{ fontSize:'16px', display:'inline'}}> {this.props.q_id}.{j+1} </h3>
 				</div>
-				{/* <OverlayTrigger placement="top" overlay={tooltip} trigger="click" > */}
 				<h3 style={{fontSize:'17px', display:'inline'}}> {subquestion_text[j]} </h3>
-				{/* </OverlayTrigger > */}
-
 				<Glyphicon glyph="chevron-down" style={{float:'right', display:'inline'}} />
-
 				</Panel.Title>
 			</Panel.Heading>
+			
 			<Panel.Collapse >
 				<Panel.Body collapsible>
-				<Select
+				{/* <Select
 					style={{textAlign:'left', width:'300px', marginRight:'auto', marginLeft:'auto'}}
 					// ref="mySelectList"
 					closeOnSelect={false}
@@ -281,7 +368,8 @@ class MultiSelectField extends React.Component {
 					autoFocus
 					autosize={!autosize}
 					delimiter='|'
-				/>
+				/> */}
+				{sub_options}
 				<div>
 				<Button bsStyle="primary" style={buttonStyle} onClick={this.handleSubmit}> 
 				Submit
@@ -373,7 +461,7 @@ class MultiSelectField extends React.Component {
 		{
 		qType.push(
 			
-			<form  style={{marginTop:'20px'}}
+			<form  style={{marginTop:'20px', marginRight:'20px'}}
 			// onSubmit={this.handleSubmitText}
 			>
 			<label>
@@ -381,7 +469,7 @@ class MultiSelectField extends React.Component {
 			  ref="mySelectList"
 			  value={this.state.value}
 			  rows={9}
-			  cols={72}
+			  cols={60}
 			  autoFocus
 		  
 			//   onChange={this.handleChange} 
@@ -423,24 +511,36 @@ class MultiSelectField extends React.Component {
 
 	else if (choice_type=="1" || choice_type=="2")
 		{
-			qType.push(<Select
-					ref="mySelectList"
-					closeOnSelect={false}
-					disabled={disabled}
-					multi={choice_type2}
-					onChange={this.handleSelectChange}
-					options={options}
-					placeholder={(choice_type=="1") ? "Select your answer" : "Select your answer(s)"}
-          			removeSelected={true}
-					rtl={this.state.rtl}
-					simpleValue
-					value={this.state.value}
-					autosize={!autosize}
-					style={{marginTop:'10px', textAlign:'left', width:'400px', marginRight:'auto', marginLeft:'auto'}}
-					delimiter='|'
-					autoFocus
-					// pageSize={2}
-				/>)
+			qType.push(<div 
+			// style={{textAlign:'left', overflowY:'scroll', maxHeight:'100px', 
+			// 	marginLeft:'255px', marginRight:'auto'}}
+			>
+			{/* <ToggleButtonGroup block vertical
+			type={ToggleType} 
+			name={ToggleType} 
+			> */}
+			{options}
+			{/* </ToggleButtonGroup> */}
+			</div>
+					// <Select
+					// ref="mySelectList"
+					// closeOnSelect={false}
+					// disabled={disabled}
+					// multi={choice_type2}
+					// onChange={this.handleSelectChange}
+					// options={options}
+					// placeholder={(choice_type=="1") ? "Select your answer" : "Select your answer(s)"}
+          			// removeSelected={true}
+					// rtl={this.state.rtl}
+					// simpleValue
+					// value={this.state.value}
+					// autosize={!autosize}
+					// style={{marginTop:'10px', textAlign:'left', width:'400px', marginRight:'auto', marginLeft:'auto'}}
+					// delimiter='|'
+					// autoFocus
+					// // pageSize={2}
+					// />
+			)
 		}
 		
 
@@ -449,60 +549,64 @@ class MultiSelectField extends React.Component {
 			<div className="section">
 			
 			{/* <Jumbotron style={{padding: '20px', borderRadius:'20px', border:'solid', borderWidth:'1px', borderColor:'grey'}}> */}
-			
+			<Card >
+      {/* <CardActionArea style={{width:'100%'}}> */}
+        <CardMedia
+          style={{height:140, width:'100%'}}
+		  //image="src/images/para.jpg"
+		  image={this.props.image}
+          title="Contemplative Reptile"
+        />
+        <CardContent>
+          <Typography gutterBottom variant="headline" component="h2">
+		  {this.props.text}
 
-			<div >
-			<OverlayTrigger placement="top" overlay={tooltip} trigger="click" >
+          </Typography>
+		</CardContent>
 
-				<a className="section" 
-					style={{marginBottom:'40px', fontSize:'22px', color:'black'}} > 
-					
-					{/* {this.state.text2} */}
 
-					<Typist avgTypingDelay={32} key={ this.props.text }
-					cursor= {
-							{show: true,
-							blink: false,
-							element: '|',
-							hideWhenDone: true,
-							hideWhenDoneDelay: 50}
-							} >
-					{this.props.text}
-					</Typist>
+          <IconButton
+            // className={classnames(classes.expand, {
+            //   [classes.expandOpen]: this.state.expanded2,
+            // })}
+            onClick={this.handleExpandClick}
+            aria-expanded={this.state.expanded2}
+            aria-label="Show more"
+          >
+            <ExpandMoreIcon />
+          </IconButton>
 
-					{/* {text}  */}
-					</a>
-					</OverlayTrigger>
+		<Collapse in={this.state.expanded} timeout="auto" unmountOnExit style={{ transitionDelay: 500 }}>
+		<CardContent style={{ width:'100%', margin:'10px'}}>
+          {/* <Typography component="p"> */}
+		  {qType}
+          {/* </Typography> */}
+		</CardContent>
 
-				{qType}
-			</div>
-			
+		<CardActions>
+		<Button variant="contained" size="small" style={{fontSize:'14px'}}>
+			<SaveIcon  style={{marginRight:'7px'}}/>
+			Save
+		</Button>
+      </CardActions>
 
-			<div>
-				<Button  bsStyle="primary" style={buttonStyle} onClick={this.handleSubmit}> 
-				Submit
-				</Button>
-			</div>			
+		</Collapse>
 
-				<OverlayTrigger placement="left" overlay={tooltip}  >
-				<Glyphicon glyph="info-sign" style={{ display:'inline'}} />
-				</OverlayTrigger>
+      {/* </CardActionArea> */}
 
+    </Card>
 
 
 			<br></br><br></br>
-			{/* </Jumbotron> */}
 
 			<div>
 			<PanelGroup accordion id="accordion-example" onSelect={this.clearValue} defaultActiveKey={0}
-			// accordion={true} defaultActiveKey={0} activeKey={this.state.active_Panel}  
 			> 
 			{panel}
 			</PanelGroup>
 			</div>
 
 			</div>
-			// {/* <h2 className="section"> {subquestion_text[0]} </h2> */}
 
 			
 
@@ -515,6 +619,6 @@ class MultiSelectField extends React.Component {
 		);
 	}
 }
-
+  
 // module.exports = MultiSelectField;
 export default MultiSelectField;

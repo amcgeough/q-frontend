@@ -10,9 +10,12 @@
   "author": "Brad Traversy",
   "license": "MIT",
   "dependencies": {
+    "@material-ui/core": "^3.0.1",
+    "@material-ui/icons": "^3.0.1",
     "bootstrap": "^3.3.7",
     "config": "^1.30.0",
     "create-react-class": "^15.6.3",
+    "css-modules-require-hook": "^4.2.3",
     "file-loader": "^1.1.11",
     "less": "^3.0.4",
     "less-loader": "^4.1.0",
@@ -26,11 +29,14 @@
     "react-dropzone": "^4.2.13",
     "react-infinite": "^0.13.0",
     "react-router-dom": "^4.3.1",
+    "react-scroll": "^1.7.10",
     "react-select": "^1.2.1",
     "react-transition-group": "^2.4.0",
     "react-typist": "^2.0.4",
+    "react-waypoint": "^8.0.3",
     "url-loader": "^1.0.1",
-    "webpack-combine-loaders": "^2.0.3"
+    "webpack-combine-loaders": "^2.0.3",
+    "wix-style-react": "^4.12.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
