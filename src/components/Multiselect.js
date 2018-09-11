@@ -33,12 +33,19 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+//import FormHelperText from '@material-ui/core/FormHelperText';
+
 import Collapse from '@material-ui/core/Collapse';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
+//import getMuiTheme from 'material-ui/styles/getMuiTheme';
+
 // import SaveIcon from '@material-ui/icons/Save';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import SaveIcon from '@material-ui/icons/Save';
@@ -73,22 +80,31 @@ const tooltip = (
 
 
 
-function choice_data(choices, q_id, choice_type) {
-	var j, Choice_Options = []
+function choice_data(choices, q_id, choice_type, handleSelectChange, valuee) {
+	var j, Choice_Options = [], texting
+	//Choice_Options.push(<RadioGroup name="gender1" value={this.state.value} onChange={(event) => handleSelectChange()}>)
+	const numbers = [1, 2, 3, 4, 5];
 	if (choice_type=="1") {
+	Choice_Options.push(numbers.map(function(j)  {
+		//console.log('whaaaaa ' + j)
+	
+	
+		if (choices[j].question == q_id) {
+		texting = choices[j].choice_text
+		return <FormControlLabel value={texting}  control={<Radio />}  label={texting}/>
+		//return <li>{j}</li>
+		}}
+	))
+		
+		//<FormControl component="fieldset">
+			//<RadioGroup >
+	return <FormControl component="fieldset"> <RadioGroup value={valuee}  onChange={(event) => handleSelectChange(event.target.value, event.target.checked)} > 
+				{Choice_Options} </RadioGroup> </FormControl>
+			//
+			//</FormControl>
+	}
 
-	for (j = 0; j < choices.length; j++)
-		{if (choices[j].question == q_id) {
-		var texting = choices[j].choice_text
-//		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
-		Choice_Options.push(
-						<FormControlLabel value={texting} control={<Radio />} label={texting} />
-							)
 
-		}
-		}
-	return Choice_Options
-		}
 	else {
 		for (j = 0; j < choices.length; j++)
 		{if (choices[j].question == q_id) {
@@ -97,7 +113,10 @@ function choice_data(choices, q_id, choice_type) {
 		Choice_Options.push(
 							<FormControlLabel
 								control={
-								<Checkbox value={texting} />
+								<Checkbox value={texting} 
+								//checked={checked}
+								onChange={(event) => handleSelectChange(event.target.value, event.target.checked)}
+					 			/>
 								}
 								label={texting}
 							/>
@@ -172,6 +191,7 @@ class MultiSelectField extends React.Component {
 			stayOpen: false,
 			value: null,
 			value2: null,
+			checked: false,
 			compliance_status: [],
 			rtl: false,
 			questions:[],
@@ -195,15 +215,25 @@ class MultiSelectField extends React.Component {
 	this.handleExpandClick = this.handleExpandClick.bind(this)
 
 	}
-
+	handleSelectChange (value, checked)  {
+		//this.setState({ [name]: event.target.checked });
+		if (checked==true) {
+		console.log(value)
+		this.setState({value: value})
+		}
+	  };
+	// handleSelectChange = name => event => {
+	// 	this.setState({ [name]: event.target.checked });
+	//   };
+			
 	handleExpandClick ()  {
 		this.setState(state => ({ expanded2: !state.expanded2 }));
 	  };
 	
-	handleSelectChange (value) {
-		console.log('You\'ve selected:', value);
-		this.setState({ value: value });
-	}
+	// handleSelectChange (value) {
+	// 	console.log('You\'ve selected:', value);
+	// 	this.setState({ value: value });
+	// }
 
 	handleSelectChangeSub (value) {
 		console.log('You\'ve selected:', value);
@@ -310,7 +340,7 @@ class MultiSelectField extends React.Component {
 		var choice_type = questions.filter(choice => choice.id==this.props.q_id).map(choice => choice.choice_type)
 		var choice_type2 = (choice_type=="1") ? false : true
 
-		const options = choice_data(choices, this.props.q_id, choice_type)
+		const options = choice_data(choices, this.props.q_id, choice_type, this.handleSelectChange, this.state.value)
 		console.log('oops')
 		console.log(options)
 		console.log(choices)
@@ -450,6 +480,12 @@ class MultiSelectField extends React.Component {
 		)
 		}
 			
+
+
+
+
+
+
 	console.log({dateType})
 	//Question Type displayed
 	if (choice_type=="4")
