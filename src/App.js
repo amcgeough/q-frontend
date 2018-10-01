@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+
 import Select from 'react-select';
 import MultiSelectField from './components/Multiselect.js'
 import Creatable from './components/Creatable.js'
@@ -9,6 +12,14 @@ import Navigation_App from './components/NavigationApp.js';
 import Typist from 'react-typist';
 import {Tabs, Tab, Radio, Checkbox} from 'react-bootstrap';
 import Infinite from 'react-infinite'
+
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import Typography from '@material-ui/core/Typography';
+import Badge from '@material-ui/core/Badge';
+import MailIcon from '@material-ui/icons/Mail';
 
 // import RadioGroup from 'wix-style-react/RadioGroup';
 
@@ -28,10 +39,23 @@ const Choice = [
 
 
 const SelectStyle = {width:'50%', padding:'30px', width: '700px',
-                  marginLeft: 'auto', marginRight: 'auto', background: 'white', borderRadius:'20px'}
+                  marginLeft: 'auto', marginRight: 'auto', background: 'white', borderRadius:'20px',
+                  backgroundImage: `url(${Background})`
+                }
 
+const styles = theme => ({
+  margin: {
+    margin: theme.spacing.unit * 2,
+  },
+  padding: {
+    padding: `0 ${theme.spacing.unit * 2}px`,
+  },
+});
+
+                
 
 class App extends Component {
+  
   constructor() {
     super();
     this.state = {
@@ -81,7 +105,7 @@ buildElements(start, end) {
 
 handleScroll() {
   this.setState({isInfiniteLoading: true});
-  
+
   setTimeout( function() {
     var elemLength = this.state.elements.length
     var newelements = this.buildElements(elemLength, elemLength+20)
@@ -104,67 +128,61 @@ elementInfiniteLoad() {
 
 
   render() {
-    // const { questions } = this.state;
-    // console.log(questions)
-    // var text = questions.filter(text => text.id==3).map(text => text.question_text)
-    // console.log(text)
+
+
     return (
       <div style={{backgroundImage: `url(${Background})`}}> 
       <Navigation_App />
 
       <div style = {SelectStyle} >
       
-        {/* <h1>First Compliance</h1> */}
-        
-        {/* <div>
-          {questions.map(data =>
-          <div key={data.id}>
-            <a>{data.question_text}</a>
-          </div>
-          )}
-        </div> */}
-  {/* <Tabs ref='tabs' defaultActiveKey={1} id="uncontrolled-tab-example" bsStyle="tabs" style={{marginBottom:'20px'}}>
-  <Tab eventKey={1} title="GDPR">
-  </Tab>
-  <Tab eventKey={2} title="AML">
 
-  </Tab>
-  <Tab eventKey={3} title="AFC">
+    <ExpansionPanel>
 
-  </Tab>
-</Tabs> */}
+      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+      GDPR
+      <Badge style={{margin: 'auto 40px auto auto'}} badgeContent={10} color="error">
+          {/* <MailIcon /> */}
+        </Badge>
+      </ExpansionPanelSummary>
 
-        <Pagination_App ref='pagination' key={1.5}/>
-        {/* <MultiSelectField example={text}/> */}
-        
+      <ExpansionPanelDetails>
 
+      <Pagination_App ref='pagination' key={1.5}/>
+      
+      </ExpansionPanelDetails>
+    
+    </ExpansionPanel>
+
+    <ExpansionPanel>
+      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+      AML 
+      <Badge style={{margin: 'auto 40px auto auto'}} badgeContent={6} color="error">
+          {/* <MailIcon /> */}
+        </Badge>
+      </ExpansionPanelSummary>
+      <ExpansionPanelDetails>
+        AML Questions
+      </ExpansionPanelDetails>
+    </ExpansionPanel>
+
+    <ExpansionPanel style={{marginBottom:'100%'}}>
+      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+      AFC
+      <Badge style={{margin: 'auto 40px auto auto'}} badgeContent={3} color="error">
+          {/* <MailIcon /> */}
+        </Badge>
+      </ExpansionPanelSummary>
+      <ExpansionPanelDetails>
+        AFC Questions
+      </ExpansionPanelDetails>
+    </ExpansionPanel>
 
 
         {/* <Creatable/>
         <CitiesField/> */}
       </div>
 
-      {/* <div style={{background: this.state.color, color:'white', width:'20%', padding:'0px 0px 0px 10px'}}>
-
-      <Infinite 
-                id='scroll'
-                ref='scroll'
-                elementHeight={20}
-                containerHeight={200}
-                infiniteLoadBeginEdgeOffset={1}
-                useWindowAsScrollContainer={true} 
-                // displayBottomUpwards={false}
-                handleScroll={this.onScroll}
-                onInfiniteLoad={this.handleScroll}
-                isInfiniteLoading={this.state.isInfiniteLoading}
-                loadingSpinnerDelegate={this.elementInfiniteLoad()}
-                style={{width:'20%'}}
-      >
-
-      {this.state.elements}
-
-      </Infinite>
-      </div> */}
       </div>
 
 
@@ -172,4 +190,11 @@ elementInfiniteLoad() {
   }
 }
 
-export default App;
+//export default App;
+
+App.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(App);
+  
