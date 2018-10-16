@@ -55,33 +55,16 @@ import ExpandLessIcon from '@material-ui/icons/ExpandLess';
 import SaveIcon from '@material-ui/icons/Save';
 import UndoIcon from '@material-ui/icons/Undo';
 
+import Subs from './Subs.js'
+
+
+var api_host = 'http://54.72.140.182:3000'
 
 const tooltip = (
 	<Tooltip id="tooltip">
 	  <strong>GDPR:</strong> This question is related to new GDPR rules which came into force in May 25th.
 	</Tooltip>
   );
-
-// function choice_data(choices, q_id, choice_type) {
-// 	var j, Choice_Options = []
-// 	const Type = (choice_type=="1") ? Radio : Checkbox
-
-// 	for (j = 0; j < choices.length; j++)
-// 		{if (choices[j].question == q_id) {
-// 		var texting = choices[j].choice_text
-// //		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
-// 		Choice_Options.push(
-// 							<Type style={{padding:'0px 0px 0px 10px', margin:'0px 0px 0px 0px'}} 
-// 										validationState={null} value={texting} >
-// 							{texting}
-// 							</Type>
-// 							)
-
-// 		}
-// 		}
-// 	return Choice_Options
-// 		}
-
 
 
 
@@ -94,13 +77,13 @@ function choice_data(choices, q_id, choice_type, handleSelectChange, handleSelec
 		//console.log('whaaaaa ' + j)
 	
 	
-		if (choices[j].question == q_id) {
+		if (choices[j].question_id == q_id) {
 		texting = choices[j].choice_text
 		return <FormControlLabel value={texting}  control={<Radio />}  label={texting} disabled={disabled}/>
 		//return <li>{j}</li>
 		}}
 	))
-		
+
 		//<FormControl component="fieldset">
 			//<RadioGroup >
 	return <FormControl component="fieldset"> 
@@ -118,7 +101,7 @@ function choice_data(choices, q_id, choice_type, handleSelectChange, handleSelec
 
 	else {
 		for (j = 0; j < choices.length; j++)
-		{if (choices[j].question == q_id) {
+		{if (choices[j].question_id == q_id) {
 		var texting = choices[j].choice_text
 //		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
 		Choice_Options.push(
@@ -140,65 +123,6 @@ function choice_data(choices, q_id, choice_type, handleSelectChange, handleSelec
 	}
 }
 
-
-
-function subchoice_data(subchoices, subq_id, subchoice_type, handleSelectChangeSub, value) {
-	var j, Sub_Choice_Options = []
-	//var type = (choice_type=="1") ? 'Radio' : 'Checkbox'
-	//for (j = 0; j < subchoices.length; j++)
-	//	{if (subchoices[j].sub_question == subq_id) {
-	//		var subtexting = subchoices[j].choice_text
-//			Sub_Choice_Options.push({ label: subchoices[j].choice_text, value: subchoices[j].choice_text})
-	//		Sub_Choice_Options.push(<type validationState="success">{subtexting}</type>)
-
-			//}
-			//}
-	//return Sub_Choice_Options
-	//	}
-		
-		if (subchoice_type=="1") {
-			Sub_Choice_Options.push(subchoices.map(function(sub_question, j)  {
-				//console.log('whaaaaa ' + j)
-			
-			
-				if (subchoices[j].sub_question == subq_id) {
-				subtexting = subchoices[j].choice_text
-				return <FormControlLabel value={subtexting}  control={<Radio />}  label={subtexting}/>
-				//return <li>{j}</li>
-				}}
-			))
-				
-				//<FormControl component="fieldset">
-					//<RadioGroup >
-			return <FormControl component="fieldset"> <RadioGroup value={value}  onChange={(event) => handleSelectChangeSub(event.target.value, event.target.checked)} > 
-						{Sub_Choice_Options} </RadioGroup> </FormControl>
-					//
-					//</FormControl>
-			}
-		
-		
-			else {
-				for (j = 0; j < subchoices.length; j++)
-				{if (subchoices[j].sub_question == subq_id) {
-				var subtexting = subchoices[j].choice_text
-		//		Choice_Options.push({ label: choices[j].choice_text, value: choices[j].choice_text})
-			Sub_Choice_Options.push(
-									<FormControlLabel
-										control={
-										<Checkbox value={subtexting} 
-										//checked={checked}
-										onChange={(event) => handleSelectChangeSub(event.target.value, event.target.checked)}
-										 />
-										}
-										label={subtexting}
-									/>
-									)
-		
-				}
-				}
-				return Sub_Choice_Options
-			}
-		}
 
 const buttonStyle = {marginTop:'10px', float:'center', marginBottom:'15px'}
 
@@ -241,7 +165,6 @@ class MultiSelectField extends React.Component {
 	this.state = 
 		 {
 			removeSelected: false,
-			disabled: false,
 			crazy: false,
 			stayOpen: false,
 			value: null,
@@ -251,19 +174,25 @@ class MultiSelectField extends React.Component {
 			rtl: false,
 			questions:[],
 			choices:[],
+			choices3000:[],
 			subquestions: [],
 			subchoices: [],
 			Choice_Options:[],
 			Sub_Choice_Options:[],
 			active_Panel: 0,
 			date_range:0,
+			subdate_range:0,
 			files:[],
+			subfiles:[],
 			pastChoiceType:[],
 			text2:null,
 			expanded: false,
 			subexpanded: false,
 			checked_save: false,
-			disabled:false
+			disabled:false,
+			sub_disabled:false,
+			insert:[],
+			// outcome:1
 
 		};
 	this.handleSelectChange = this.handleSelectChange.bind(this);
@@ -271,20 +200,45 @@ class MultiSelectField extends React.Component {
 	this.handleSelectChangeSub = this.handleSelectChangeSub.bind(this);
 	this.clearValue = this.clearValue.bind(this);
 	this.onShowTimeChange = this.onShowTimeChange.bind(this)
+	this.SubonShowTimeChange = this.SubonShowTimeChange.bind(this)
 	this.handleSubmitText = this.handleSubmitText.bind(this)
 	this.handleExpandClick = this.handleExpandClick.bind(this)
 	this.handleSubExpandClick = this.handleSubExpandClick.bind(this)
 	this.handleChange = this.handleChange.bind(this)
 	this.undo = this.undo.bind(this)
+	this.subonDrop = this.subonDrop(this)
 
 	}
 
+	handleChange (outcome)  {
+		console.log('postingppppppppppppppppppppppppppppppppppppppppp')
+		var date = new Date(); 
+		console.log(date)
+		console.log(this.props.audit)
 
-	handleChange ()  {
+
+		fetch(api_host+'/questions_question_answer', {
+			method: 'POST',
+			headers: {
+			  'Accept': 'application/json',
+			  'Content-Type': 'application/json',
+			  "Access-Control-Allow-Origin" : "*", 
+			},
+			body: JSON.stringify({
+			"compliance_status": outcome, 
+			"question_id_id": this.props.q_id,
+			"audit":this.props.audit,
+			"date": date
+			})
+		  }).then(response => response.json())
+		  .then(data => console.log(data));
+
 		this.setState(state => ({ checked_save: !this.state.checked_save }));
 		this.setState({disabled: true });
 
 	  };
+
+
 
 	  undo ()  {
 		this.setState(state => ({ checked_save: !this.state.checked_save }));
@@ -345,7 +299,11 @@ class MultiSelectField extends React.Component {
 	onShowTimeChange() {
 		this.setState({date_range: !this.state.date_range})
 		// console.log(this.state.date_range)
+		}
 
+	SubonShowTimeChange() {
+		this.setState({subdate_range: !this.state.subdate_range})
+		// console.log(this.state.date_range)
 		}
 	
 	// setValueType(choice_type) {
@@ -364,20 +322,26 @@ class MultiSelectField extends React.Component {
 	}
 
 	componentWillMount() {
-		fetch('http://127.0.0.1:8000/api/').then(response => response.json())
-		.then(data => this.setState({ questions: data }));
-		
-		fetch('http://127.0.0.1:8000/api/choice').then(response => response.json())
-		.then(data => this.setState({ choices: data }));
+	
+		// fetch(api_host+'/questions_question', {method: 'get'}).then(response => response.json())
+		// .then(data => this.setState({ questions: data }));
+		this.setState({ questions: this.props.questions })
+		this.setState({ choices: this.props.choices })
+		this.setState({ subquestions: this.props.subquestions })
+		this.setState({ subchoices: this.props.subchoices })
 
-		fetch('http://127.0.0.1:8000/api/subquestions').then(response => response.json())
-		.then(data => this.setState({ subquestions: data }));
-
-		fetch('http://127.0.0.1:8000/api/subchoices').then(response => response.json())
-		.then(data => this.setState({ subchoices: data }));
+		// fetch(api_host+'/questions_choice').then(response => response.json())
+		// .then(data => this.setState({ choices: data }))
 		
+
+		// fetch(api_host+'/questions_subquestion').then(response => response.json())
+		// .then(data => this.setState({ subquestions: data }));
+
+		// fetch(api_host+'/questions_subchoice').then(response => response.json())
+		// .then(data => this.setState({ subchoices: data }));
+
 		this.setState({text2: this.props.text});
-
+		  
 		  }
 
 
@@ -397,50 +361,47 @@ class MultiSelectField extends React.Component {
 		});
 	  }
 
+	subonDrop(subfiles) {
+		this.setState({
+		  subfiles
+		});
+	  }
+
 	componentWillReceiveProps(newProps) {
 		this.state.pastChoiceType.push(newProps.q_choice_type)
 		this.setState({text2: newProps.text});
 		this.setState({expanded: newProps.expanded});
 
 		// if(this.state.pastChoiceType.length>1) 
-		console.log('past '+this.state.pastChoiceType[this.state.pastChoiceType.length-2])
+		// console.log('past '+this.state.pastChoiceType[this.state.pastChoiceType.length-2])
 
-		if (this.state.pastChoiceType[this.state.pastChoiceType.length-2]!=5 && 
-			this.state.pastChoiceType[this.state.pastChoiceType.length-2]!=6) 
-				{
-				console.log('ch '+newProps.q_choice_type)
-				// this.refs.mySelectList.focus() 
-				}
-			// this.refs.mySelectList.focus()
-			this.setState({value: newProps.value});
+		// if (this.state.pastChoiceType[this.state.pastChoiceType.length-2]!=5 && 
+		// 	this.state.pastChoiceType[this.state.pastChoiceType.length-2]!=6) 
+		// 		{
+		// 		console.log('ch '+newProps.q_choice_type)
+		// 		// this.refs.mySelectList.focus() 
+		// 		}
+		// 	// this.refs.mySelectList.focus()
+		// 	this.setState({value: newProps.value});
 			}
 
 
 	render () {
-		console.log('text: ' + this.state.text2)
 		
 		const { questions, choices, subquestions, subchoices, Choice_Options , Sub_Choice_Options} = this.state;
-		
-		var outcome = choices.filter(choice => choice.question==this.props.q_id).filter(choice => choice.choice_text==this.state.value).map(choice => choice.compliance_status)
-
-		var subquestion_id = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.id)
-		var subquestion_text = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.question_text)
-		console.log(subquestion_text)
-		var subchoice_type = subquestions.filter(text => text.question==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.choice_type)
-		var subchoice_type2 = (subchoice_type=="1") ? false : true
-		console.log('subee' +subchoice_type)
-		var text = questions.filter(text => text.id==this.props.q_id).map(text => text.question_text)
-
 		var choice_type = questions.filter(choice => choice.id==this.props.q_id).map(choice => choice.choice_type)
 		var choice_type2 = (choice_type=="1") ? false : true
 
-		const options = choice_data(choices, this.props.q_id, choice_type, this.handleSelectChange, this.handleSelectChangeRadio, this.state.value, this.state.disabled)
-		console.log('oops')
-		console.log(options)
-		console.log(choices)
-		const ToggleType = (choice_type=="1") ? 'radio' : 'checkbox'
-		console.log(ToggleType)
+		var outcome = this.state.choices.filter(choice => choice.question_id==this.props.q_id).filter(choice => choice.choice_text==this.state.value).map(choice => choice.compliance_status)
+		outcome = (choice_type=='5' || choice_type=='6' || choice_type=='3' || choice_type=='4') ? '1' : outcome
 
+		var subquestion_id = subquestions.filter(text => text.question_id==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.id)
+		var subquestion_text = subquestions.filter(text => text.question_id==this.props.q_id).filter(text => text.outcome==outcome).map(text => text.question_text)
+
+		var text = questions.filter(text => text.id==this.props.q_id).map(text => text.question_text)
+
+		const options = choice_data(choices, this.props.q_id, choice_type, this.handleSelectChange, this.handleSelectChangeRadio, this.state.value, this.state.disabled)
+		const ToggleType = (choice_type=="1") ? 'radio' : 'checkbox'
 
 		const { crazy, disabled, stayOpen, value, autosize, type, compliance_status } = this.state;
 		
@@ -450,77 +411,24 @@ class MultiSelectField extends React.Component {
 		else {subexpand_icon.push(<ExpandLessIcon />)}
 	
 		var panel=[], j
-		console.log('checked_save')
-		console.log(this.state.checked_save)
-		console.log(this.state.checked)
-		console.log(ToggleType)
 
-		if (subquestion_text.length>0 && (this.state.checked==true || ToggleType=='radio') && this.state.checked_save==true)
+		if (subquestion_text.length>0 && this.state.checked_save==true)
 			{
-			console.log('ifyess')
 
 			for (j = 0; j < subquestion_text.length; j++)
 			{
-			const sub_options = subchoice_data(subchoices, subquestion_id[j], subchoice_type, this.handleSelectChangeSub, this.state.value2)
-			console.log('suboptios')
-			console.log(sub_options)
-			console.log(subchoices)
-	
-			// this.props.window['value' + j] = 'oh'+j
-			
 
-		panel.push(
-	<div>
-	{/* <Switch checked={this.state.checked} onChange={this.handleChange}  /> */}
-	<Slide direction="right" in={true} mountOnEnter unmountOnExit> 
-
-		<Card style={{margin:'10px 10px 20px 10px'}}>
-      {/* <CardActionArea style={{width:'100%'}}> */}
-        {/* <CardMedia
-          style={{height:140, width:'100%'}}
-		  //image="src/images/para.jpg"
-		  image={this.props.image}
-          title="Contemplative Reptile"
-        /> */}
-        <CardContent>
-          <Typography gutterBottom variant="headline" component="h2">
-		  {subquestion_text[j]}
-
-          </Typography>
-
-		</CardContent>
-
-
-          <IconButton
-            onClick={this.handleSubExpandClick}
-            aria-expanded={this.state.subexpanded}
-            aria-label="Show more"
-          >
-            {subexpand_icon}
-          </IconButton>
-
-
-		<Collapse in={this.state.subexpanded} timeout="auto" unmountOnExit style={{ transitionDelay: 500 }}>
-		<CardContent style={{ width:'100%', margin:'10px'}}>
-		  {/* <Typography component="p"> */}
-		  <div>
-		  {sub_options}
-		  </div>
-          {/* </Typography> */}
-		</CardContent>
-
-		<CardActions>
-		<Button variant="contained" size="small" style={{fontSize:'14px'}}>
-			<SaveIcon  style={{marginRight:'7px'}}/>
-			Save
-		</Button>
-      </CardActions>
-	  </Collapse>
-	  </Card>
-
-		</Slide>
-		</div>
-
+				panel.push(
+							<Subs
+							questions= {this.state.questions }
+							choices= {this.state.choices }
+							subquestions= {this.state.subquestions }
+							subchoices= {this.state.subchoices }
+							outcome={outcome}
+							q_id={this.props.q_id}
+							subquestion_id={subquestion_id[j]}
+							audit={this.props.audit}
+							/>
 			)}
 			}
 		else
@@ -528,10 +436,6 @@ class MultiSelectField extends React.Component {
 			panel = []
 			}
 		
-
-
-
-
 
 
 		var qType = []
@@ -592,10 +496,6 @@ class MultiSelectField extends React.Component {
 		)
 		}
 			
-
-
-
-
 
 
 	console.log({dateType})
@@ -693,16 +593,16 @@ class MultiSelectField extends React.Component {
 
 			<div className="section">
 
-	<Card >
+	<Card style={{minWidth:'500px', marginLeft:'auto', marginRight:'auto', textAlign:'center'}}>
       {/* <CardActionArea style={{width:'100%'}}> */}
         <CardMedia
-          style={{height:140, width:'100%'}}
+          style={{height:110, width:'100%'}}
 		  //image="src/images/para.jpg"
 		  image={this.props.image}
           title={this.props.text}
         />
         <CardContent>
-          <Typography gutterBottom variant="headline" component="h2">
+          <Typography gutterBottom variant="headline" component="h2" style={{fontSize:"22px"}}>
 		  {this.props.text}
           </Typography>
 
@@ -730,7 +630,7 @@ class MultiSelectField extends React.Component {
 
 		<CardActions>
 		<Button variant="contained" size="small" style={{fontSize:'14px'}} 
-				onClick={this.handleChange} disabled={this.state.disabled}
+				onClick={this.handleChange.bind(this, outcome[0])} disabled={this.state.disabled}
 				>
 			<SaveIcon  style={{marginRight:'7px'}}/>
 			Save

@@ -20,7 +20,10 @@ import {
     TransitionGroup,
   } from 'react-transition-group';
   
-  var images = [
+
+var api_host = 'http://54.72.140.182:3000'
+
+var images = [
     'https://images.unsplash.com/photo-1534259362708-6d0c72ccdf3e?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1600&h=900&fit=crop&ixid=eyJhcHBfaWQiOjF9&s=230ae279dbd51cf79fc5664d7033df81',
     'https://images.unsplash.com/photo-1534535091711-71b06c129856?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1600&h=900&fit=crop&ixid=eyJhcHBfaWQiOjF9&s=87281f428e5bb02cb58585c9d66d7205',
     'https://images.unsplash.com/photo-1534683299359-d2d10dda2d3d?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1600&h=900&fit=crop&ixid=eyJhcHBfaWQiOjF9&s=1b9005722612f839d8edc32af15db814',
@@ -42,6 +45,9 @@ class Pagination_App extends Component {
           selected_value: null,
           questions: [],
           questions_data:[],
+          choices:[],
+          subchoices:[],
+          subquestions:[],
           expanded: false,
           q_divs: [],
           isInfiniteLoading: false
@@ -64,7 +70,7 @@ class Pagination_App extends Component {
         this.setState({selected_value: null})
         var new_items = []
         // for (let number = 2; number <= 4; number++) {
-        this.state.questions.forEach(number => {
+        this.props.audit_questions.sort().forEach(number => {
             var text = this.state.questions_data.filter(text => text.id==number).map(text => text.question_text)
             const tooltip = (
                 <Tooltip id="tooltip">
@@ -94,10 +100,24 @@ class Pagination_App extends Component {
         
         (async() => {
             try {
-              var response = await fetch('http://127.0.0.1:8000/api');
+              var response = await fetch(api_host+'/questions_question');
               var data = await response.json();
               this.setState({questions_data: data})
-              var x = await data.map(text => text.id).sort()
+
+              var response = await fetch(api_host+'/questions_choice');
+              var choices = await response.json();
+              this.setState({choices: choices})
+
+              var response = await fetch(api_host+'/questions_subquestion');
+              var subquestions = await response.json();
+              this.setState({subquestions: subquestions})
+
+              var response = await fetch(api_host+'/questions_subchoice');
+              var subchoices = await response.json();
+              this.setState({subchoices: subchoices})
+
+              console.log(data)
+              var x = this.props.audit_questions.sort()
               this.setState({questions: x})
               console.log(x)
               var y = []
@@ -109,13 +129,22 @@ class Pagination_App extends Component {
                         </Tooltip>
                         );
 
-                // for (let number = 2; number <= 4; number++) {    
+                // for (let number = 2; number <= 4; number++) {
+                    var active_answers = ''
+                    this.props.answered_id_list.forEach(id =>
+                    active_answers += 'number==='+id+' || '
+                    )
+                    active_answers = active_answers.substring(0, active_answers.length - 3);
+
+                    console.log(active_answers)
                     y.push(
                     <OverlayTrigger placement="left" overlay={tooltip}  >
         
                     <Pagination.Item
                         // active={number===this.state.activeNumber} 
-                        active={number===5 || number==2} 
+                        //active={number===2 || number===1}
+                        active={this.props.answered_id_list.includes(number)}
+                        //active = {active_answers}
                         //onClick={this.create_item.bind(this, number)}
                         
                     >
@@ -126,7 +155,8 @@ class Pagination_App extends Component {
                 )
                 })
             this.setState({items: y})
-            var id_list = this.state.questions_data.map(text => text.id).sort()
+            // var id_list = this.state.questions_data.map(text => text.id).sort()
+            var id_list = this.props.audit_questions.sort()
             id_list = id_list.slice(0,2)
 
             var question_divs = []
@@ -135,9 +165,9 @@ class Pagination_App extends Component {
                 var text = this.state.questions_data.filter(text => text.id==number).map(text => text.question_text)
                 var key = number.toString()
                 var expand2 = (number==id_list[0]) ? true : false
-                var marginTop = (number==id_list[0]) ? '100px' : '20px'
+                var marginTop = (number==id_list[0]) ? '30px' : '20px'
                 console.log('expp '+expand2+number)
-
+                var splash1 = 'https://source.unsplash.com/collection/'+key
                 question_divs.push(
     
                     // <Waypoint
@@ -147,11 +177,18 @@ class Pagination_App extends Component {
                     // onEnter={this.onWaypointEnter.bind(this, number)}
                     // onLeave={this.onWaypointLeave.bind(this, number)}
                     // >
-                    <div style={{marginBottom:'100px', marginTop:marginTop}}>
+                    <div style={{marginBottom:'50px', marginTop:marginTop}}>
     
                     <div>
                     <MultiSelectField key={key} q_id={number} value={this.state.selected_value}
-                                  q_choice_type={choice_type} text={text} expanded={expand2} image={images[number]}
+                                  q_choice_type={choice_type} text={text} expanded={expand2} 
+                                  //image={images[number]}
+                                  image={splash1}
+                                  questions={this.state.questions_data}
+                                  choices={this.state.choices}
+                                  subquestions={this.state.subquestions}
+                                  subchoices={this.state.subchoices}
+                                  audit={this.props.audit}
                                           />
                     </div>
                     </div>
@@ -230,7 +267,9 @@ class Pagination_App extends Component {
 
             //console.log('Hieee '+id_list[0])
             //this.setState({expanded: false})
-            var id_list = this.state.questions_data.map(text => text.id).sort()
+            // var id_list = this.state.questions_data.map(text => text.id).sort()
+            var id_list = this.props.audit_questions.sort()
+
             id_list = id_list.slice(this.state.q_divs.length,this.state.q_divs.length+1)
 
             var question_divs2 = []
@@ -239,18 +278,25 @@ class Pagination_App extends Component {
                 var text = this.state.questions_data.filter(text => text.id==number).map(text => text.question_text)
                 var key = number.toString()
                 //var expand = (id_list[0]==number) ? true : false
-                var marginTop = (number==id_list[0]) ? '100px' : '20px'
-
+                var marginTop = (number==id_list[0]) ? '30px' : '20px'
+                var splash2 = 'https://source.unsplash.com/collection/'+key
                 //console.log('eee ' +expand)
                 question_divs2.push(
     
-                    <div style={{marginBottom:'0px', marginTop:marginTop}}>
+                    <div style={{marginBottom:'50px', marginTop:marginTop}}>
     
                     <div>  
                     <MultiSelectField key={key} q_id={number} value={this.state.selected_value}
                                   q_choice_type={choice_type} text={text} 
                                   //expanded={expand} 
-                                  image={images[number]}
+                                  //image={images[number]}
+                                  image={splash2}
+                                  questions={this.state.questions_data}
+                                  choices={this.state.choices}
+                                  subquestions={this.state.subquestions}
+                                  subchoices={this.state.subchoices}
+                                  audit={this.props.audit}
+
                                           />
                     </div>
                     </div>
@@ -271,7 +317,8 @@ class Pagination_App extends Component {
 
             console.log('Hieee '+num)
             //this.setState({expanded: false})
-            var id_list = this.state.questions_data.map(text => text.id).sort()
+            // var id_list = this.state.questions_data.map(text => text.id).sort()
+            var id_list = this.props.audit_questions.sort()
             var question_divs = []
             id_list.forEach(number => {
                 var choice_type = this.state.questions_data.filter(choice => choice.id==number).map(choice => choice.choice_type)
@@ -279,6 +326,7 @@ class Pagination_App extends Component {
                 var key = number.toString()
                 var expand = (num==number) ? true : false
                 var marginTop = (number==id_list[0]) ? '100px' : '20px'
+                var splash3 = 'https://source.unsplash.com/collection/'+key
 
                 console.log('eee ' +expand)
                 question_divs.push(
@@ -295,7 +343,9 @@ class Pagination_App extends Component {
     
                     <div>  
                     <MultiSelectField key={key} q_id={number} value={this.state.selected_value}
-                                  q_choice_type={choice_type} text={text} expanded={expand} image={images[number]}
+                                  q_choice_type={choice_type} text={text} expanded={expand} 
+                                  //image={images[number]}
+                                  image={splash3}
                                           />
                     </div>
                     </div>
@@ -317,29 +367,39 @@ class Pagination_App extends Component {
 
         // var choice_type = this.state.questions_data.filter(choice => choice.id==this.state.activeNumber).map(choice => choice.choice_type)
 		// var text = this.state.questions_data.filter(text => text.id==this.state.activeNumber).map(text => text.question_text)
-        var id_list = this.state.questions_data.map(text => text.id).sort()
+        // var id_list = this.state.questions_data.map(text => text.id).sort()
+        var id_list = this.props.audit_questions.sort()
+
 
         console.log(this.state.items)
         console.log('xx'+this.state.activeNumber)
         // console.log('xx'+choice_type)
 
-        const now = 60;
+        // const now = 60;
         const now2 = 30
+        const now = (this.props.answered_id_list.length/this.props.audit_questions.length)*100
 
 
         return (
-            <div style={{textAlign:'center'}}>
-            <Jumbotron id="containerElement" style={{padding: '20px',paddingBottom:'350px', borderRadius:'20px', 
-                                                    maxHeight:'900px', overflowY:'scroll', backgroundColor:'transparent'}}>
-            <ProgressBar now={now} label={`${now}%`} />
-
+            <div style={{textAlign:'center', margin: 'auto auto auto auto'}}>
+            <ProgressBar now={now} label={`${now}%`} 
+                            style={{margin: 'auto auto 0px auto', maxWidth:'40px'}} />
             <Pagination  bsSize="small" style={{
-                                                //paddingBottom:'120px',
-                                                paddingBottom:'25px',
+                                                paddingTop:'-10px',
+                                                paddingBottom:'-600px',
                                                 color:'green'}} >
 
             {this.state.items}
             </Pagination>
+
+            <Jumbotron id="containerElement" style={{padding: '0px 0px 0px 0px', borderRadius:'20px', 
+                                                    // maxHeight:'450px', 
+                                                    overflowY:'scroll', 
+                                                    backgroundColor:'transparent',
+                                                    // width:'200px',
+                                                    margin: 'auto auto 0px auto'
+                                                }}>
+
             <br/>
             <div >
 
@@ -355,7 +415,7 @@ class Pagination_App extends Component {
                 onInfiniteLoad={this.handleScroll}
                 isInfiniteLoading={this.state.isInfiniteLoading}
                 loadingSpinnerDelegate={this.elementInfiniteLoad()}
-                style={{width:'20%'}}
+                // style={{width:'20%'}}
       >
 
        {this.state.q_divs}
